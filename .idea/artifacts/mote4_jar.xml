@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="mote4:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/mote4_jar</output-path>
+    <root id="archive" name="mote4.jar">
+      <element id="module-output" name="mote4" />
+      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl-3/jar/lwjgl.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
