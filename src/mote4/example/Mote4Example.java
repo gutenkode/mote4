@@ -13,7 +13,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- *
+ * Example project in Mote4.
+ * Press space to enable/disable texture filtering.
  * @author Peter
  */
 public class Mote4Example implements Scene {
@@ -22,8 +23,7 @@ public class Mote4Example implements Scene {
     {
         System.setProperty("java.awt.headless", "true"); // prevents ImageIO from hanging on OS X
         // default windowed resolution, window can be freely resized by default
-        //Window.init(1920/2, 1080/2);
-        Window.init(100,100);
+        Window.init(1920/2, 1080/2);
 
         //glfwSetWindowAspectRatio(Window.getWindowID(), 16, 9);
         glfwSetWindowSizeLimits(Window.getWindowID(), 640, 480, GLFW_DONT_CARE, GLFW_DONT_CARE);
