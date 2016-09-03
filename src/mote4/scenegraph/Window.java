@@ -316,6 +316,36 @@ public class Window {
         return new int[] {screenSize.width,
                           screenSize.height};
     }
+
+    /**
+     * Resize the window.
+     * @param w
+     * @param h
+     */
+    public static void resize(int w, int h) {
+        glfwSetWindowSize(window, w, h);
+    }
+    public static void setWindowed() {
+        long monitor = glfwGetPrimaryMonitor();
+        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        glfwWindowHint(GLFW_RED_BITS, mode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
+        glfwSetWindowMonitor(window, NULL, 0,0, mode.width(), mode.height(), mode.refreshRate());
+    }
+    public static void setFullscreen() {
+        long monitor = glfwGetPrimaryMonitor();
+        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        glfwWindowHint(GLFW_RED_BITS, mode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
+        glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
+    }
+    public static void setBorderless() {
+
+    }
     
     // Cursor utilities
     /**

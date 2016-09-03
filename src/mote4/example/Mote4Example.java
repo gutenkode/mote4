@@ -34,7 +34,7 @@ public class Mote4Example implements Scene {
         
         glEnable(GL_DEPTH_TEST); // for 3D rendering
         loadResources();
-        
+
         Window.addScene(new Mote4Example());
         Window.loop(); // run the game loop, default 60fps
     }
