@@ -42,38 +42,44 @@ public class Window {
     private static ArrayList<Layer> layers;
     private static Layer defaultLayer;
     private static Framebuffer framebuffer;
- 
-    public static void init(int w, int h) {
-        try {
-            useVsync = (DEFAULT_VSYNC != 0);
+
+
+    /**
+     * Initialize the GLFW window and OpenGL context.
+     * The window will be fullscreen at the monitor's native resolution.
+     */
+    public static void initFullscreen() { init(0,0,true); }
+    /**
+     * Initialize the GLFW window and OpenGL context.
+     * The window will be in windowed mode.
+     * @param w
+     * @param h
+     */
+    public static void initWindowed(int w, int h) { init(w,h,false); }
+    private static void init(int w, int h, boolean fullscreen) {
+        if (window != -1)
+            return; // the window has already been initialized
+
+        useVsync = (DEFAULT_VSYNC != 0);
             
-            framebuffer = new Framebuffer();
-            defaultLayer = new Layer(framebuffer);
-            layers = new ArrayList<>();
-            
-            createContext(w,h);
-            
-            // This line is critical for LWJGL's interoperation with GLFW's
-            // OpenGL context, or any context that is managed externally.
-            // LWJGL detects the context that is current in the current thread,
-            // creates the GLCapabilities instance and makes the OpenGL
-            // bindings available for use.
-            GL.createCapabilities();
-            
-            System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
-            System.out.println("GLSL Version:   " + GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION));
-            System.out.println("Renderer:       " + GL11.glGetString(GL11.GL_RENDERER));
-    
-            // Free the window callbacks and destroy the window
-            //glfwFreeCallbacks(window);
-            //glfwDestroyWindow(window);
-        } finally {
-            // Terminate GLFW and free the error callback
-            //glfwTerminate();
-            //glfwSetErrorCallback(null).free();
-        }
+        framebuffer = new Framebuffer();
+        defaultLayer = new Layer(framebuffer);
+        layers = new ArrayList<>();
+
+        createContext(w,h,fullscreen);
+
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the GLCapabilities instance and makes the OpenGL
+        // bindings available for use.
+        GL.createCapabilities();
+
+        System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
+        System.out.println("GLSL Version:   " + GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION));
+        System.out.println("Renderer:       " + GL11.glGetString(GL11.GL_RENDERER));
     }
-    private static void createContext(int initWidth, int initHeight) {
+    private static void createContext(int initWidth, int initHeight, boolean fullscreen) {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
@@ -86,28 +92,38 @@ public class Window {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, RESIZABLE); // set the window resizable state
+        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_TRUE);
         
         // target OpenGL 3.3 core
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
-        
-        // Create the window
-        window = glfwCreateWindow(initWidth, initHeight, windowTitle, NULL, NULL);
-        if ( window == NULL )
-            throw new RuntimeException("Failed to create the GLFW window");
- 
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        // create the window
+        if (fullscreen) {
+            // width and height are ignored
+            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            window = glfwCreateWindow(mode.width(), mode.height(), windowTitle, glfwGetPrimaryMonitor(), NULL);
+            if (window == NULL)
+                throw new RuntimeException("Failed to create the GLFW window");
+        } else {
+            window = glfwCreateWindow(initWidth, initHeight, windowTitle, NULL, NULL);
+            if (window == NULL)
+                throw new RuntimeException("Failed to create the GLFW window");
+
+            // get the resolution of the primary monitor
+            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            // center the window
+            glfwSetWindowPos(
+                window,
+                (mode.width() - initWidth) / 2,
+                (mode.height() - initHeight) / 2
+            );
+        }
+
+        // default callbacks and handling for window resizing
         createCallbacks();
- 
-        // Get the resolution of the primary monitor
-        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        // Center our window
-        glfwSetWindowPos(
-            window,
-            (vidmode.width() - initWidth) / 2,
-            (vidmode.height() - initHeight) / 2
-        );
  
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
@@ -136,8 +152,9 @@ public class Window {
         glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
             fbWidth = width;
             fbHeight = height;
-            for (Layer l : layers)
-                l.framebufferResized(fbWidth, fbHeight); // re-evaluate ALL scenes, just to be safe
+            if (fbWidth > 0 && fbHeight > 0) // ignore invalid size updates, e.g. alt-tabbing
+                for (Layer l : layers)
+                    l.framebufferResized(fbWidth, fbHeight); // re-evaluate ALL scenes, just to be safe
         });
         // initialize values
         IntBuffer b1 = BufferUtils.createIntBuffer(1);
@@ -325,15 +342,29 @@ public class Window {
     public static void resize(int w, int h) {
         glfwSetWindowSize(window, w, h);
     }
-    public static void setWindowed() {
+
+    /**
+     * Switch to a windowed display mode.
+     * The window will be centered in the screen.
+     * @param w
+     * @param h
+     */
+    public static void setWindowed(int w, int h) {
         long monitor = glfwGetPrimaryMonitor();
         GLFWVidMode mode = glfwGetVideoMode(monitor);
         glfwWindowHint(GLFW_RED_BITS, mode.redBits());
         glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
-        glfwSetWindowMonitor(window, NULL, 0,0, mode.width(), mode.height(), mode.refreshRate());
+        glfwSetWindowMonitor(window, NULL,
+            (mode.width() - w) / 2, // x,y position
+            (mode.height() - h) / 2,
+            w, h, mode.refreshRate());
     }
+
+    /**
+     * Switch to an exclusive fullscreen mode.
+     */
     public static void setFullscreen() {
         long monitor = glfwGetPrimaryMonitor();
         GLFWVidMode mode = glfwGetVideoMode(monitor);
@@ -342,9 +373,6 @@ public class Window {
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
         glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
-    }
-    public static void setBorderless() {
-
     }
     
     // Cursor utilities

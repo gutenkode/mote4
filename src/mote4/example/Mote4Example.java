@@ -23,7 +23,8 @@ public class Mote4Example implements Scene {
     {
         System.setProperty("java.awt.headless", "true"); // prevents ImageIO from hanging on OS X
         // default windowed resolution, window can be freely resized by default
-        Window.init(1920/2, 1080/2);
+        //Window.initWindowed(1920/2, 1080/2);
+        Window.initFullscreen();
 
         //glfwSetWindowAspectRatio(Window.getWindowID(), 16, 9);
         glfwSetWindowSizeLimits(Window.getWindowID(), 640, 480, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -76,6 +77,15 @@ public class Mote4Example implements Scene {
                         filter = false;
                     else if (action == GLFW_RELEASE)
                         filter = true;
+                    break;
+                case GLFW_KEY_ESCAPE:
+                    Window.destroy();
+                    break;
+                case GLFW_KEY_1:
+                    Window.setWindowed(1920/2, 1080/2);
+                    break;
+                case GLFW_KEY_2:
+                    Window.setFullscreen();
                     break;
             }
         });
