@@ -48,15 +48,23 @@ public class Window {
      * Initialize the GLFW window and OpenGL context.
      * The window will be fullscreen at the monitor's native resolution.
      */
-    public static void initFullscreen() { init(0,0,true); }
+    public static void initFullscreen() { init(0,0,true,false,0,0); }
     /**
      * Initialize the GLFW window and OpenGL context.
      * The window will be in windowed mode.
      * @param w
      * @param h
      */
-    public static void initWindowed(int w, int h) { init(w,h,false); }
-    private static void init(int w, int h, boolean fullscreen) {
+    public static void initWindowed(int w, int h) { init(w,h,false,false,0,0); }
+    /**
+     * Initializes a windowed context based on the size of the monitor.
+     * @param percentHeight Percent size of the monitor the window height should be. For example,
+     *                      .5 would be 50%, or a window half the height of the display.
+     * @param aspectRatio The aspect ratio of the window, used to calculate the width.
+     */
+    public static void initWindowedPercent(double percentHeight, double aspectRatio) { init(0, 0, false,true,percentHeight,aspectRatio); }
+
+    private static void init(int w, int h, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         if (window != -1)
             return; // the window has already been initialized
 
@@ -66,7 +74,7 @@ public class Window {
         defaultLayer = new Layer(framebuffer);
         layers = new ArrayList<>();
 
-        createContext(w,h,fullscreen);
+        createContext(w,h,fullscreen,percent,percentHeight,aspectRatio);
 
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
@@ -79,7 +87,7 @@ public class Window {
         System.out.println("GLSL Version:   " + GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION));
         System.out.println("Renderer:       " + GL11.glGetString(GL11.GL_RENDERER));
     }
-    private static void createContext(int initWidth, int initHeight, boolean fullscreen) {
+    private static void createContext(int initWidth, int initHeight, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
@@ -101,19 +109,23 @@ public class Window {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         // create the window
+        GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         if (fullscreen) {
             // width and height are ignored
-            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             window = glfwCreateWindow(mode.width(), mode.height(), windowTitle, glfwGetPrimaryMonitor(), NULL);
             if (window == NULL)
                 throw new RuntimeException("Failed to create the GLFW window");
         } else {
+            if (percent) {
+                initHeight = (int)(mode.height()*percentHeight);
+                initWidth = (int)(initHeight*aspectRatio);
+            }
+
             window = glfwCreateWindow(initWidth, initHeight, windowTitle, NULL, NULL);
             if (window == NULL)
                 throw new RuntimeException("Failed to create the GLFW window");
 
             // get the resolution of the primary monitor
-            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // center the window
             glfwSetWindowPos(
                 window,
@@ -335,15 +347,6 @@ public class Window {
     }
 
     /**
-     * Resize the window.
-     * @param w
-     * @param h
-     */
-    public static void resize(int w, int h) {
-        glfwSetWindowSize(window, w, h);
-    }
-
-    /**
      * Switch to a windowed display mode.
      * The window will be centered in the screen.
      * @param w
@@ -361,7 +364,28 @@ public class Window {
             (mode.height() - h) / 2,
             w, h, mode.refreshRate());
     }
+    /**
+     * Switch to windowed context based on the size of the monitor.
+     * @param percentHeight Percent size of the monitor the window height should be. For example,
+     *                      .5 would be 50%, or a window half the height of the display.
+     * @param aspectRatio The aspect ratio of the window, used to calculate the width.
+     */
+    public static void setWindowedPercent(double percentHeight, double aspectRatio) {
+        long monitor = glfwGetPrimaryMonitor();
+        GLFWVidMode mode = glfwGetVideoMode(monitor);
 
+        int h = (int)(mode.height()*percentHeight);
+        int w = (int)(h*aspectRatio);
+
+        glfwWindowHint(GLFW_RED_BITS, mode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
+        glfwSetWindowMonitor(window, NULL,
+                (mode.width() - w) / 2, // x,y position
+                (mode.height() - h) / 2,
+                w, h, mode.refreshRate());
+    }
     /**
      * Switch to an exclusive fullscreen mode.
      */
