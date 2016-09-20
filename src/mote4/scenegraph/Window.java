@@ -33,7 +33,8 @@ public class Window {
     private static String windowTitle = "Game";
     
     private static boolean useVsync = (DEFAULT_VSYNC != 0),
-                           displayDelta = false;
+                           displayDelta = false,
+                           isFullscreen;
     private static int targetFps = 60, // when vsync is disabled, use this framerate
                        windowWidth = -1, windowHeight = -1, // window size
                        fbWidth = -1, fbHeight = -1; // framebuffer size
@@ -48,21 +49,30 @@ public class Window {
      * Initialize the GLFW window and OpenGL context.
      * The window will be fullscreen at the monitor's native resolution.
      */
-    public static void initFullscreen() { init(0,0,true,false,0,0); }
+    public static void initFullscreen() {
+        isFullscreen = true;
+        init(0,0,true,false,0,0);
+    }
     /**
      * Initialize the GLFW window and OpenGL context.
      * The window will be in windowed mode.
      * @param w
      * @param h
      */
-    public static void initWindowed(int w, int h) { init(w,h,false,false,0,0); }
+    public static void initWindowed(int w, int h) {
+        isFullscreen = false;
+        init(w,h,false,false,0,0);
+    }
     /**
      * Initializes a windowed context based on the size of the monitor.
      * @param percentHeight Percent size of the monitor the window height should be. For example,
      *                      .5 would be 50%, or a window half the height of the display.
      * @param aspectRatio The aspect ratio of the window, used to calculate the width.
      */
-    public static void initWindowedPercent(double percentHeight, double aspectRatio) { init(0, 0, false,true,percentHeight,aspectRatio); }
+    public static void initWindowedPercent(double percentHeight, double aspectRatio) {
+        isFullscreen = true;
+        init(0, 0, false,true,percentHeight,aspectRatio);
+    }
 
     private static void init(int w, int h, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         if (window != -1)
@@ -363,6 +373,7 @@ public class Window {
             (mode.width() - w) / 2, // x,y position
             (mode.height() - h) / 2,
             w, h, mode.refreshRate());
+        isFullscreen = false;
     }
     /**
      * Switch to windowed context based on the size of the monitor.
@@ -385,6 +396,7 @@ public class Window {
                 (mode.width() - w) / 2, // x,y position
                 (mode.height() - h) / 2,
                 w, h, mode.refreshRate());
+        isFullscreen = false;
     }
     /**
      * Switch to an exclusive fullscreen mode.
@@ -397,7 +409,10 @@ public class Window {
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
         glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
+        isFullscreen = true;
     }
+
+    public static boolean isFullscreen() { return isFullscreen; }
     
     // Cursor utilities
     /**
