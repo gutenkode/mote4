@@ -8,4 +8,4 @@ A simple graphics program can be written using only one file and intuitive metho
 It can also, however, scale to support full games with multiple scenes and complex rendering pipelines.
 
 #### Building
-This repo is currently uploaded as an IntelliJ project.  It has LWJGL version 3 as a dependency.
+This repo is currently uploaded as an IntelliJ project.  It has LWJGL 3 as a dependency.
