@@ -69,5 +69,10 @@ public class ScrollingText implements Mesh {
             vao.destroy();
         destroyed = true;
     }
-    
+
+    /**
+     * The full string this object will print out.
+     * @return
+     */
+    public String getFullStr() { return fullStr; }
 }
