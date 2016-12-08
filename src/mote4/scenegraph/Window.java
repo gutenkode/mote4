@@ -70,7 +70,7 @@ public class Window {
      * @param aspectRatio The aspect ratio of the window, used to calculate the width.
      */
     public static void initWindowedPercent(double percentHeight, double aspectRatio) {
-        isFullscreen = true;
+        isFullscreen = false;
         init(0, 0, false,true,percentHeight,aspectRatio);
     }
 
