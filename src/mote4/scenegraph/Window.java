@@ -29,7 +29,7 @@ public class Window {
     private static long variableYieldTime, lastTime; // used in sync()
     
     private static final int RESIZABLE = GLFW_TRUE,
-                             DEFAULT_VSYNC = 1;
+                             DEFAULT_VSYNC = 0;
     private static String windowTitle = "Game";
     
     private static boolean useVsync = (DEFAULT_VSYNC != 0),
