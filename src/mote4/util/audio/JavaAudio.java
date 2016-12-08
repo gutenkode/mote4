@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 /**
- * This class should be temporary!  Audio management is less controlled and
- *
+ * This class should be temporary!  Rough support for streaming ogg files,
+ * will be switched to OpenAL in the future.
  * Created by Peter on 12/6/16.
  */
 public class JavaAudio extends Thread {
