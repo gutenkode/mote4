@@ -50,7 +50,7 @@ public class Audio {
      * buffer to it, and then play the source without looping.  If no free
      * source is found, it will create a new one and add it to the list.
      * This method ensures every sfx requested can play in its entirety while
-     * limiting the number of sources created to the minimum needed.
+     * limiting the number of sources created to minimum.
      * @param name
      */
     public static void playSfx(String name) {

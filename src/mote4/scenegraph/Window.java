@@ -78,7 +78,7 @@ public class Window {
         if (window != -1)
             return; // the window has already been initialized
 
-        useVsync = (DEFAULT_VSYNC != 0);
+        //useVsync = (DEFAULT_VSYNC != 0);
             
         framebuffer = new Framebuffer();
         defaultLayer = new Layer(framebuffer);
@@ -227,14 +227,14 @@ public class Window {
                 l.render(delta);
             }
             
-            if (!useVsync)
-                sync(targetFps);
-            
             glfwSwapBuffers(window); // swap the color buffers
             
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
+
+            if (!useVsync)
+                sync(targetFps);
         }
         destroy();
     }
@@ -287,7 +287,7 @@ public class Window {
             e.printStackTrace();
         } finally {
             lastTime = System.nanoTime() - Math.min(overSleep, sleepTime);
-             
+
             // auto tune the time sync should yield
             if (overSleep > variableYieldTime) {
                 // increase by 200 microseconds (1/5 a ms)
@@ -413,6 +413,7 @@ public class Window {
     }
 
     public static boolean isFullscreen() { return isFullscreen; }
+    public static boolean isVsyncEnabled() { return useVsync; }
     
     // Cursor utilities
     /**
