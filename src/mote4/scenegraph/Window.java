@@ -1,16 +1,15 @@
 package mote4.scenegraph;
 
 import java.awt.Dimension;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import mote4.scenegraph.target.Framebuffer;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
- 
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -28,11 +27,10 @@ public class Window {
     private static long window = -1; // the glfw window handle
     private static long variableYieldTime, lastTime; // used in sync()
     
-    private static final int RESIZABLE = GLFW_TRUE,
-                             DEFAULT_VSYNC = 0;
-    private static String windowTitle = "Game";
+    private static final int RESIZABLE = GLFW_TRUE;
+    private static String windowTitle = "mote4 Engine";
     
-    private static boolean useVsync = (DEFAULT_VSYNC != 0),
+    private static boolean useVsync = false, // default setting for vsync unless specified
                            displayDelta = false,
                            isFullscreen;
     private static int targetFps = 60, // when vsync is disabled, use this framerate
@@ -43,7 +41,6 @@ public class Window {
     private static ArrayList<Layer> layers;
     private static Layer defaultLayer;
     private static Framebuffer framebuffer;
-
 
     /**
      * Initialize the GLFW window and OpenGL context.
@@ -77,8 +74,6 @@ public class Window {
     private static void init(int w, int h, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         if (window != -1)
             return; // the window has already been initialized
-
-        //useVsync = (DEFAULT_VSYNC != 0);
             
         framebuffer = new Framebuffer();
         defaultLayer = new Layer(framebuffer);
@@ -94,6 +89,7 @@ public class Window {
         GL.createCapabilities();
 
         System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
+        System.out.println("LWJGL version:  " + Version.getVersion());
         System.out.println("GLSL Version:   " + GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION));
         System.out.println("Renderer:       " + GL11.glGetString(GL11.GL_RENDERER));
     }
@@ -103,7 +99,7 @@ public class Window {
         GLFWErrorCallback.createPrint(System.err).set();
  
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if ( !glfwInit() )
+        if (!glfwInit())
             throw new IllegalStateException("Unable to initialize GLFW.");
  
         // Configure our window
@@ -146,13 +142,16 @@ public class Window {
 
         // default callbacks and handling for window resizing
         createCallbacks();
- 
-        // Make the OpenGL context current
+
+        // make the OpenGL context current
         glfwMakeContextCurrent(window);
-        // Enable v-sync
-        glfwSwapInterval(DEFAULT_VSYNC);
+        // set vsync
+        if (useVsync)
+            glfwSwapInterval(1);
+        else
+            glfwSwapInterval(0);
  
-        // Make the window visible
+        // make the window visible
         glfwShowWindow(window);
     }
     private static void createCallbacks() {
@@ -200,17 +199,17 @@ public class Window {
         double lastTime = glfwGetTime();
         glClearColor(0, 0, 0, 0);
         
-        // if the default layer has any scenes, add it to the end of the list
+        // if the default layer has any scenes, add it to the END of the list
         if (defaultLayer.numScenes() > 0)
             layers.add(defaultLayer);
         // initialize scenes
         for (Layer l : layers)
             l.framebufferResized(fbWidth, fbHeight);
  
-        // Run the rendering loop until the user has attempted to close
+        // run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
-        while ( !glfwWindowShouldClose(window) ) {
-            
+        while (!glfwWindowShouldClose(window))
+        {
             double currTime = glfwGetTime();
             double delta = (currTime-lastTime);
             lastTime = currTime;
@@ -309,6 +308,7 @@ public class Window {
             glfwSwapInterval(0);
             
     }
+    public static boolean isVsyncEnabled() { return useVsync; }
     public static void setFPS(int fps) {
         targetFps = fps;
     }
@@ -411,9 +411,7 @@ public class Window {
         glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
         isFullscreen = true;
     }
-
     public static boolean isFullscreen() { return isFullscreen; }
-    public static boolean isVsyncEnabled() { return useVsync; }
     
     // Cursor utilities
     /**
