@@ -2,6 +2,8 @@ package mote4.util.shader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.IllegalFormatException;
+
 import mote4.scenegraph.Window;
 import mote4.util.FileIO;
 import org.lwjgl.opengl.GL11;
@@ -17,7 +19,49 @@ public class ShaderUtils {
     public static int VERTEX = GL20.GL_VERTEX_SHADER;
     public static int FRAGMENT = GL20.GL_FRAGMENT_SHADER;
     public static int GEOMETRY = GL32.GL_GEOMETRY_SHADER;
-    
+
+    /**
+     * Load all shaders specified in an index file.
+     * The index file must be in the res/shaders directory.
+     */
+    public static void loadIndex(String filename) {
+        //System.out.println("Parsing shader index file...");
+        BufferedReader br = FileIO.getBufferedReader("/res/shaders/"+filename);
+        String in;
+        try {
+            while((in = br.readLine()) != null) {
+                if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
+                    continue;
+                String[] keys = in.split("\t+");
+                if (keys.length >= 3) {
+                    for (int i = 0; i < keys.length; i++)
+                        keys[i] = keys[i].trim();
+                    String[] source = new String[keys.length-1];
+                    int[] shaders = new int[keys.length-1];
+                    for (int i = 0; i < source.length; i++) {
+                        source[i] = ShaderUtils.loadSource(keys[i]);
+                        int type;
+                        if (keys[i].endsWith(".vert"))
+                            type = VERTEX;
+                        else if (keys[i].endsWith(".geom"))
+                            type = GEOMETRY;
+                        else if (keys[i].endsWith(".frag"))
+                            type = FRAGMENT;
+                        else
+                            throw new IllegalArgumentException("Incorrect filename for shader: "+keys[i]+"\nOnly .vert .geom and .frag are supported.");
+                        shaders[i] = ShaderUtils.compileShaderFromSource(source[i], type);
+                    }
+                    ShaderUtils.addProgram(shaders, keys[keys.length-1]);
+
+                } else
+                    System.out.println("Invalid shader index line: "+in);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading shader index file.");
+            e.printStackTrace();
+            Window.destroy();
+        }
+    }
     /**
      * Loads a file located in res/shaders and returns it in a string.
      * File names must include the extension.

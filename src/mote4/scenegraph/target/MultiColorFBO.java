@@ -1,6 +1,8 @@
 package mote4.scenegraph.target;
 
 import java.nio.IntBuffer;
+import java.util.Arrays;
+
 import mote4.util.FBOUtils;
 import mote4.util.texture.Texture;
 import mote4.util.texture.TextureMap;
@@ -32,8 +34,26 @@ public class MultiColorFBO  extends Target {
      * @param numAttachments The number of color attachments to create.
      */
     public MultiColorFBO(int w, int h, boolean useDepthBuffer, boolean useStencilBuffer, int numAttachments) {
+        this(w,h,useDepthBuffer,useStencilBuffer,createEmptyBuffer(numAttachments));
+    }
+    private static int[] createEmptyBuffer(int num) {
+        int[] buffers = new int[num];
+        Arrays.fill(buffers, -1);
+        return buffers;
+    }
+    /**
+     * Creates a framebuffer object.
+     * @param w Width of the texture
+     * @param h Height of the texture
+     * @param useDepthBuffer Whether a depth attachment should be used.
+     * @param useStencilBuffer Whether a stencil attachment should be used.  This also creates a depth attachment.
+     * @param buffers A list of color buffers to use in this FBO.  Values of -1 will be replaced with a new buffer,
+     *                while all other values are kept as-is, so already existing buffers can be reused in this FBO.
+     */
+    public MultiColorFBO(int w, int h, boolean useDepthBuffer, boolean useStencilBuffer, int[] buffers) {
         width = w;
         height = h;
+        int numAttachments = buffers.length;
         
         // create the list of attachments to bind when makeCurrent() is called
         drawBuffers = BufferUtils.createIntBuffer(numAttachments);
@@ -50,19 +70,24 @@ public class MultiColorFBO  extends Target {
         colorTextureID = new int[numAttachments];
         for (int i = 0; i < numAttachments; i++)
         {
-            colorTextureID[i] = glGenTextures(); // create a texture
+            if (buffers[i] == -1)
+                colorTextureID[i] = glGenTextures(); // create a new texture
+            else
+                colorTextureID[i] = buffers[i]; // use the already-created texture handle
+
             // bind the texture
             glBindTexture(GL_TEXTURE_2D, colorTextureID[i]);
 
             // create the texture data
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, (java.nio.ByteBuffer) null);
+            if (buffers[i] == -1) // only if this is a new buffer
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, (java.nio.ByteBuffer) null);
 
             // attach the texture to the framebuffer
             glFramebufferTexture2D(GL_FRAMEBUFFER,       // must be GL_FRAMEBUFFER
-                                   GL_COLOR_ATTACHMENT0+i, // color attachment point
-                                   GL_TEXTURE_2D,        // texture type
-                                   colorTextureID[i],       // texture ID
-                                   0);                   // mipmap level
+                    GL_COLOR_ATTACHMENT0 + i, // color attachment point
+                    GL_TEXTURE_2D,        // texture type
+                    colorTextureID[i],       // texture ID
+                    0);                   // mipmap level
         }
         ////// initialize depth buffer but not stencil buffer //////
         
@@ -134,12 +159,25 @@ public class MultiColorFBO  extends Target {
                                0);                   // mipmap level
         colorTextureID[index] = t.ID;
     }
+
+    public int getColorBufferID(int index) { return colorTextureID[index]; }
     
     @Override
     public void makeCurrent() {
         current = this;
         glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
         GL20.glDrawBuffers(drawBuffers);
+        GL11.glViewport(0, 0, width, height);
+    }
+
+    /**
+     * Only bind one buffer instead of all buffers.
+     * @param index
+     */
+    public void makeCurrent(int index) {
+        current = this;
+        glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+        GL20.glDrawBuffers(GL_COLOR_ATTACHMENT0+index);
         GL11.glViewport(0, 0, width, height);
     }
     @Override

@@ -148,9 +148,9 @@ public class TextureMap {
         String in;
         try {
             while((in = br.readLine()) != null) {
-                if (in.isEmpty())
+                if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;
-                String[] keys = in.split("\t",2);
+                String[] keys = in.split("\t+");
                 if (keys.length == 2) {
                     for (int i = 0; i < keys.length; i++)
                         keys[i] = keys[i].trim();

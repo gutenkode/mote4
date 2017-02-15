@@ -1,56 +1,8 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="mote4:jar">
+  <artifact type="jar" name="mote4:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/mote4_jar</output-path>
     <root id="archive" name="mote4.jar">
       <element id="module-output" name="mote4" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/joml-1.9.2.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/joml-1.9.2-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/joml-1.9.2-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/steamworks4j-1.6.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-stb-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-glfw-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/steamworks4j-1.6.1-javadoc.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/steamworks4j-1.6.1-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc-natives-linux.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc-natives-macos.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-openal-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-opengl-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/lwjgl/lwjgl-jemalloc-natives-windows.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/VorbisSPI1.0.3/vorbisspi1.0.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/VorbisSPI1.0.3/lib/jogg-0.0.7.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/VorbisSPI1.0.3/lib/jorbis-0.0.15.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Documents/VorbisSPI1.0.3/lib/tritonus_share.jar" path-in-jar="/" />
-      <element id="library" level="application" name="lwjgl" />
-      <element id="library" level="application" name="vorbisspi1.0.3" />
     </root>
   </artifact>
 </component>

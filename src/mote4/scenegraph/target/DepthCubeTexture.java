@@ -20,6 +20,8 @@ public class DepthCubeTexture extends Target {
     private String textureName;
     
     public DepthCubeTexture(int s) {
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); // enable filtering across cubemap faces
+
         width = s;
         height = s;
         
@@ -58,7 +60,7 @@ public class DepthCubeTexture extends Target {
         */
         // Always check that our framebuffer is ok
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            throw new IllegalStateException("Error constructing DepthTexture.");
+            throw new IllegalStateException("Error constructing DepthCubeTexture.");
         
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
