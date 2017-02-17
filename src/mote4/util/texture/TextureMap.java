@@ -19,7 +19,7 @@ public class TextureMap {
     
     private static int bytesPerPixel = 4; // 3 for RGB, 4 for RGBA
     
-    private static HashMap<String,Texture> textureMap = new HashMap<>();
+    protected static HashMap<String,Texture> textureMap = new HashMap<>();
     
     /**
      * Adds a texture handle to the map.

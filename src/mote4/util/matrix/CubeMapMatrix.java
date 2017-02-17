@@ -1,6 +1,8 @@
 package mote4.util.matrix;
 
 import java.nio.FloatBuffer;
+import java.util.Stack;
+
 import mote4.util.shader.Uniform;
 import mote4.util.vector.Matrix4f;
 import mote4.util.vector.Vector3f;
@@ -22,12 +24,14 @@ public class CubeMapMatrix {
             matrix[i] = new Matrix4f();
             setPerspective(matrix[i], 1,1, near,far, 90f);
         }
-        matrix[1].rotate((float)Math.PI*.5f,  new Vector3f(1,0,0));
-        matrix[2].rotate((float)Math.PI,      new Vector3f(1,0,0));
-        matrix[3].rotate((float)Math.PI*1.5f, new Vector3f(1,0,0));
-        
-        matrix[4].rotate((float)Math.PI*.5f,  new Vector3f(0,1,0));
-        matrix[5].rotate((float)Math.PI*-.5f, new Vector3f(0,1,0));
+        // right, left
+        matrix[0].rotate( (float)Math.PI/2, new Vector3f(0,1,0));
+        matrix[1].rotate(-(float)Math.PI/2, new Vector3f(0,1,0));
+        // top, bottom
+        matrix[2].rotate( (float)Math.PI/2,new Vector3f(1,0,0));
+        matrix[3].rotate(-(float)Math.PI/2,new Vector3f(1,0,0));
+        // near, far
+        matrix[5].rotate((float)Math.PI,new Vector3f(0,1,0));
     }
     /**
      * Creates a perspective projection.
@@ -60,5 +64,10 @@ public class CubeMapMatrix {
         buffer.flip();
         
         Uniform.mat4(uniformName, buffer);
+    }
+
+    public void translate(float x, float y, float z) {
+        for (Matrix4f mat : matrix)
+            mat.translate(new Vector3f(x,y,z));
     }
 }

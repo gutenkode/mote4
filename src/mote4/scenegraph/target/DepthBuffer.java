@@ -8,16 +8,16 @@ import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL32.*;
 
 /**
- * A DepthTexture stores the depth buffer only.
+ * A DepthBuffer stores the depth buffer only.
  * Useful for shadow mapping.
  * @author Peter
  */
-public class DepthTexture extends Target {
+public class DepthBuffer extends Target {
     
     private int depthTextureID;
     private String textureName;
     
-    public DepthTexture(int w, int h) {
+    public DepthBuffer(int w, int h) {
         width = w;
         height = h;
         

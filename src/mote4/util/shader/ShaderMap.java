@@ -9,7 +9,8 @@ import org.lwjgl.opengl.GL20;
  * @author Peter
  */
 public class ShaderMap {
-    
+
+    private static String currentName;
     private static int currentProgram = 0;
     
     private static HashMap<String,Integer> programMap = new HashMap<>();
@@ -44,6 +45,7 @@ public class ShaderMap {
             int program = programMap.get(name);
             GL20.glUseProgram(program);
             currentProgram = program;
+            currentName = name;
         } catch (NullPointerException e) {
             System.err.println(name+" is not a valid shader program!");
             e.printStackTrace();
@@ -56,6 +58,7 @@ public class ShaderMap {
     public static void useFixedFunction() {
         GL20.glUseProgram(0);
         currentProgram = 0;
+        currentName = null;
     }
     
     /**
@@ -65,6 +68,7 @@ public class ShaderMap {
     public static int getCurrent() {
         return currentProgram;
     }
+    public static String getCurrentName() { return currentName; }
     
     /**
      * Returns the shader program ID associated with the given key.

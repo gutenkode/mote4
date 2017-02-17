@@ -96,7 +96,7 @@ public class Uniform {
     public static void sampler(String name, int textureIndex) {
         int texLoc = GL20.glGetUniformLocation(ShaderMap.getCurrent(), name);
         if (texLoc == -1) {
-            System.err.println("The uniform sampler '"+name+"' does not exist in the specified program.");
+            System.err.println("The uniform sampler '"+name+"' does not exist in the program '"+ShaderMap.getCurrentName()+"'.");
         }
         GL20.glUniform1i(texLoc, textureIndex);
     }
@@ -115,7 +115,7 @@ public class Uniform {
         TextureMap.bindFiltered(texName);
         int texLoc = GL20.glGetUniformLocation(ShaderMap.getCurrent(), name);
         if (texLoc == -1) {
-            System.err.println("The uniform sampler '"+name+"' does not exist in the specified program.");
+            System.err.println("The uniform sampler '"+name+"' does not exist in the program '"+ShaderMap.getCurrentName()+"'.");
         }
         GL20.glUniform1i(texLoc, textureIndex);
         GL13.glActiveTexture(currentTexture);
@@ -135,7 +135,7 @@ public class Uniform {
         TextureMap.bindUnfiltered(texName);
         int texLoc = GL20.glGetUniformLocation(ShaderMap.getCurrent(), name);
         if (texLoc == -1) {
-            System.err.println("The uniform sampler '"+name+"' does not exist in the specified program.");
+            System.err.println("The uniform sampler '"+name+"' does not exist in the program '"+ShaderMap.getCurrentName()+"'.");
         }
         GL20.glUniform1i(texLoc, textureIndex);
         GL13.glActiveTexture(currentTexture);
