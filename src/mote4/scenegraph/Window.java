@@ -210,16 +210,16 @@ public class Window {
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window))
         {
+            // calculate delta from start of last frame
             double currTime = glfwGetTime();
             double delta = (currTime-lastTime);
             lastTime = currTime;
             if (displayDelta) {
-                double printDelta = delta*1000;
-                String timeStr = "Delta: "+printDelta;
-                timeStr = timeStr.substring(0, 11);
-                glfwSetWindowTitle(window, timeStr);
+                double printDelta = (int)(delta*1000*100)/100.0;
+                glfwSetWindowTitle(window, "Delta: "+printDelta);
             }
-            
+
+            // perform update and render of all layers
             for (Layer l : layers) {
                 l.update(delta);
                 l.makeCurrent();
@@ -252,7 +252,7 @@ public class Window {
         System.out.println("GLFW terminated.");
         System.exit(0);
     }
-    
+
     /**
      * An accurate sync method that adapts automatically
      * to the system it runs on to provide reliable results.
@@ -274,10 +274,10 @@ public class Window {
                   
                 if (t < sleepTime - yieldTime) {
                     Thread.sleep(1);
-                }else if (t < sleepTime) {
+                } else if (t < sleepTime) {
                     // burn the last few CPU cycles to ensure accuracy
                     Thread.yield();
-                }else {
+                } else {
                     overSleep = t - sleepTime;
                     break; // exit while loop
                 }
