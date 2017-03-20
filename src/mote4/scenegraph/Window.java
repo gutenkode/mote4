@@ -30,12 +30,13 @@ public class Window {
     private static final int RESIZABLE = GLFW_TRUE;
     private static String windowTitle = "mote4 Engine";
     
-    private static boolean useVsync = false, // default setting for vsync unless specified
-                           displayDelta = false,
-                           isFullscreen;
+    private static boolean useVsync = true, // default setting for vsync unless specified
+                            displayDelta = false,
+                            isFullscreen = false,
+                            windowHasFocus = false;
     private static int targetFps = 60, // when vsync is disabled, use this framerate
-                       windowWidth = -1, windowHeight = -1, // window size
-                       fbWidth = -1, fbHeight = -1; // framebuffer size
+                        windowWidth = -1, windowHeight = -1, // window size
+                        fbWidth = -1, fbHeight = -1; // framebuffer size
     private static double cursorX = -1, cursorY = -1; // cursor position
     
     private static ArrayList<Layer> layers;
@@ -47,6 +48,8 @@ public class Window {
      * The window will be fullscreen at the monitor's native resolution.
      */
     public static void initFullscreen() {
+        if (window != -1)
+            return; // the window has already been initialized
         isFullscreen = true;
         init(0,0,true,false,0,0);
     }
@@ -57,6 +60,8 @@ public class Window {
      * @param h
      */
     public static void initWindowed(int w, int h) {
+        if (window != -1)
+            return; // the window has already been initialized
         isFullscreen = false;
         init(w,h,false,false,0,0);
     }
@@ -67,6 +72,8 @@ public class Window {
      * @param aspectRatio The aspect ratio of the window, used to calculate the width.
      */
     public static void initWindowedPercent(double percentHeight, double aspectRatio) {
+        if (window != -1)
+            return; // the window has already been initialized
         isFullscreen = false;
         init(0, 0, false,true,percentHeight,aspectRatio);
     }
@@ -145,17 +152,13 @@ public class Window {
 
         // make the OpenGL context current
         glfwMakeContextCurrent(window);
-        // set vsync
-        if (useVsync)
-            glfwSwapInterval(1);
-        else
-            glfwSwapInterval(0);
+        setVsync(useVsync); // will disable vsync if windowed, otherwise vsync state depends on flag
  
         // make the window visible
         glfwShowWindow(window);
     }
     private static void createCallbacks() {
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
+        // key callback, called every time a key is pressed, repeated, or released
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
@@ -176,6 +179,10 @@ public class Window {
             if (fbWidth > 0 && fbHeight > 0) // ignore invalid size updates, e.g. alt-tabbing
                 for (Layer l : layers)
                     l.framebufferResized(fbWidth, fbHeight); // re-evaluate ALL scenes, just to be safe
+        });
+        // callback for window focus gain/loss
+        glfwSetWindowFocusCallback(window, (window, focused) -> {
+            windowHasFocus = focused;
         });
         // initialize values
         IntBuffer b1 = BufferUtils.createIntBuffer(1);
@@ -212,11 +219,11 @@ public class Window {
         {
             // calculate delta from start of last frame
             double currTime = glfwGetTime();
-            double delta = (currTime-lastTime);
+            double delta = (currTime - lastTime);
             lastTime = currTime;
             if (displayDelta) {
-                double printDelta = (int)(delta*1000*100)/100.0;
-                glfwSetWindowTitle(window, "Delta: "+printDelta);
+                double printDelta = (int) (delta * 1000 * 100) / 100.0;
+                glfwSetWindowTitle(window, "Delta: " + printDelta);
             }
 
             // perform update and render of all layers
@@ -225,14 +232,14 @@ public class Window {
                 l.makeCurrent();
                 l.render(delta);
             }
-            
+
             glfwSwapBuffers(window); // swap the color buffers
-            
+
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
 
-            if (!useVsync)
+            if (!isFullscreen || !useVsync) // sync manually if vsync is disabled or in windowed mode
                 sync(targetFps);
         }
         destroy();
@@ -302,10 +309,13 @@ public class Window {
     // Game loop utilities
     public static void setVsync(boolean enable) {
         useVsync = enable;
-        if (useVsync)
-            glfwSwapInterval(1);
-        else
-            glfwSwapInterval(0);
+        if (isFullscreen) {
+            if (useVsync)
+                glfwSwapInterval(1);
+            else
+                glfwSwapInterval(0);
+        } else
+            glfwSwapInterval(0); // do not use vsync when windowed
             
     }
     public static boolean isVsyncEnabled() { return useVsync; }
@@ -355,6 +365,7 @@ public class Window {
         return new int[] {screenSize.width,
                           screenSize.height};
     }
+    public static boolean windowHasFocus() { return windowHasFocus; }
 
     /**
      * Switch to a windowed display mode.
@@ -374,6 +385,7 @@ public class Window {
             (mode.height() - h) / 2,
             w, h, mode.refreshRate());
         isFullscreen = false;
+        glfwSwapInterval(0); // auto-disable vsync
     }
     /**
      * Switch to windowed context based on the size of the monitor.
@@ -397,6 +409,7 @@ public class Window {
                 (mode.height() - h) / 2,
                 w, h, mode.refreshRate());
         isFullscreen = false;
+        glfwSwapInterval(0); // auto-disable vsync
     }
     /**
      * Switch to an exclusive fullscreen mode.
@@ -410,6 +423,8 @@ public class Window {
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
         glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
         isFullscreen = true;
+        if (useVsync)
+            glfwSwapInterval(1); // auto-enable vsync, if flag is set
     }
     public static boolean isFullscreen() { return isFullscreen; }
     

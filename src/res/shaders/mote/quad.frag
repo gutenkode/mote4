@@ -1,4 +1,4 @@
-// texture fragment shader
+// quad fragment shader
 #version 330 core
 
 in vec2 texCoord;
