@@ -201,8 +201,12 @@ public class Window {
     public static void addLayer(Layer l) {
         layers.add(l);
     }
-    
-    public static void loop() {
+
+    public static void loop() { loop(targetFps); }
+    public static void loop(int fps) {
+        // maximum allowed timestep value for physics
+        // if the timestep is bigger than this, the update will be cut into separate updates
+        double maxTimestep = 1/55.0;
         double lastTime = glfwGetTime();
         glClearColor(0, 0, 0, 0);
         
@@ -227,8 +231,17 @@ public class Window {
             }
 
             // perform update and render of all layers
+            double frametime = Math.min(delta,1/10.0); // hard limit of .1 seconds per update step
+            while (frametime > 0) {
+                // cannot step bigger than maxTimestep
+                // if there is a bigger step, a second update will be called
+                double step = Math.min(maxTimestep, frametime);
+                for (Layer l : layers)
+                    l.update(step);
+                frametime -= step;
+            }
+            // render once per frame
             for (Layer l : layers) {
-                l.update(delta);
                 l.makeCurrent();
                 l.render(delta);
             }
@@ -240,7 +253,7 @@ public class Window {
             glfwPollEvents();
 
             if (!isFullscreen || !useVsync) // sync manually if vsync is disabled or in windowed mode
-                sync(targetFps);
+                sync(fps);
         }
         destroy();
     }

@@ -41,7 +41,7 @@ public class Mote4Example implements Scene {
         loadResources();
 
         Window.addScene(new Mote4Example());
-        Window.loop(); // run the game loop, default 60fps
+        Window.loop(60); // run the game loop, default 60fps
     }
     private static void loadResources() 
     {
