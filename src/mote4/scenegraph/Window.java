@@ -206,7 +206,7 @@ public class Window {
     public static void loop(int fps) {
         // maximum allowed timestep value for physics
         // if the timestep is bigger than this, the update will be cut into separate updates
-        double maxTimestep = 1/55.0;
+        double maxTimestep = 1/25.0;
         double lastTime = glfwGetTime();
         glClearColor(0, 0, 0, 0);
         
