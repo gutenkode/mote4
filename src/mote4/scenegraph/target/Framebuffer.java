@@ -12,8 +12,11 @@ import org.lwjgl.opengl.GL11;
  * @author Peter
  */
 public class Framebuffer extends Target {
+
+    private static final Framebuffer buf = new Framebuffer();
+    public static Framebuffer getDefault() { return buf; }
     
-    public Framebuffer() {
+    private Framebuffer() {
         bufferIndex = 0;
     }
     

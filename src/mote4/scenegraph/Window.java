@@ -41,7 +41,6 @@ public class Window {
     
     private static ArrayList<Layer> layers;
     private static Layer defaultLayer;
-    private static Framebuffer framebuffer;
 
     /**
      * Initialize the GLFW window and OpenGL context.
@@ -81,9 +80,8 @@ public class Window {
     private static void init(int w, int h, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         if (window != -1)
             return; // the window has already been initialized
-            
-        framebuffer = new Framebuffer();
-        defaultLayer = new Layer(framebuffer);
+
+        defaultLayer = new Layer(Framebuffer.getDefault());
         layers = new ArrayList<>();
 
         createContext(w,h,fullscreen,percent,percentHeight,aspectRatio);
