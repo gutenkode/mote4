@@ -185,7 +185,7 @@ public class FontUtils {
                 float yCoord = y*ROW_HEIGHT;
                 
                 //float newWidth = (float)metrics[(int)c]/0x20;
-                float newWidth = (float)metrics[(int)c]/charPixelWidth;
+                float newWidth = (float)metrics[((int)c)%metrics.length]/charPixelWidth;
                 newWidth *= letterWidth;
 
                 // add vertex coordinates

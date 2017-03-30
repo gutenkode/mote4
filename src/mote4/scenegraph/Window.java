@@ -229,6 +229,7 @@ public class Window {
             }
 
             // perform update and render of all layers
+            /*
             double frametime = Math.min(delta,1/10.0); // hard limit of .1 seconds per update step
             while (frametime > 0) {
                 // cannot step bigger than maxTimestep
@@ -238,6 +239,11 @@ public class Window {
                     l.update(step);
                 frametime -= step;
             }
+            */
+            double step = Math.min(maxTimestep, delta);
+            for (Layer l : layers)
+                l.update(step);
+
             // render once per frame
             for (Layer l : layers) {
                 l.makeCurrent();

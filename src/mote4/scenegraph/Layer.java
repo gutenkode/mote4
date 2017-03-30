@@ -35,6 +35,7 @@ public class Layer {
     public void setTarget(Target t) { 
         target = t;
     }
+    public Target getTarget() { return target; }
     
     public void update(double delta) {
         for (Scene s : scenes)
