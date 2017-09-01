@@ -1,9 +1,9 @@
 package mote4.util.matrix;
 
 import java.nio.FloatBuffer;
+
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-import mote4.util.vector.Matrix4f;
-import mote4.util.vector.Vector3f;
 import mote4.util.shader.Uniform;
 
 /**
@@ -13,8 +13,9 @@ import mote4.util.shader.Uniform;
 public class ViewMatrix extends TransformationMatrix {
     
     public ViewMatrix() {
+        super();
         matrix = new Matrix4f();
-        matrix.setIdentity();
+        matrix.identity();
     }
     
     /**
@@ -22,16 +23,15 @@ public class ViewMatrix extends TransformationMatrix {
      * Does not reset to identity first.
      */
     public void setOrthoView() {
-        matrix.rotate((float)Math.PI/4, new Vector3f(1,0,0));
+        matrix.rotate((float)Math.PI/4, 1,0,0);
         float sqrt2 = (float)Math.sqrt(2);
-        matrix.scale(new Vector3f(1,sqrt2,sqrt2));
+        matrix.scale(1, sqrt2, sqrt2);
     }
-    
+
     @Override
     public void makeCurrent() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
-        matrix.store(buffer);
-        buffer.flip();
+        matrix.get(buffer);
         
         Uniform.mat4("viewMatrix", buffer);
     }

@@ -7,14 +7,14 @@ package mote4.scenegraph;
  * @author Peter
  */
 public interface Scene {
-    public void update(double delta);
-    public void render(double delta);
+    void update(double time, double delta);
+    void render(double time, double delta);
     /**
      * Called from a Layer the Scene is attached to - will always be the
      * framebuffer dimensions provided by glfw.
      * @param width
      * @param height 
      */
-    public void framebufferResized(int width, int height);
-    public void destroy();
+    void framebufferResized(int width, int height);
+    void destroy();
 }

@@ -149,7 +149,7 @@ public class WaveData {
 	}
 	
 	/**	
-	 * Creates a WaveData container from the specified ByetBuffer.
+	 * Creates a WaveData container from the specified ByteBuffer.
 	 * If the buffer is backed by an array, it will be used directly, 
 	 * else the contents of the buffer will be copied using get(byte[]).
 	 *

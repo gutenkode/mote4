@@ -5,6 +5,8 @@ import java.awt.Toolkit;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import mote4.scenegraph.target.Framebuffer;
+import mote4.util.audio.ALContext;
+import mote4.util.audio.AudioPlayback;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
@@ -37,7 +39,8 @@ public class Window {
     private static int targetFps = 60, // when vsync is disabled, use this framerate
                         windowWidth = -1, windowHeight = -1, // window size
                         fbWidth = -1, fbHeight = -1; // framebuffer size
-    private static double cursorX = -1, cursorY = -1; // cursor position
+    private static double cursorX = -1, cursorY = -1, // cursor position
+                          deltaTime, currentTime;
     
     private static ArrayList<Layer> layers;
     private static Layer defaultLayer;
@@ -136,7 +139,7 @@ public class Window {
             if (window == NULL)
                 throw new RuntimeException("Failed to create the GLFW window");
 
-            // get the resolution of the primary monitor
+            // get the resolution of the primary monitor,
             // center the window
             glfwSetWindowPos(
                 window,
@@ -202,9 +205,7 @@ public class Window {
 
     public static void loop() { loop(targetFps); }
     public static void loop(int fps) {
-        // maximum allowed timestep value for physics
-        // if the timestep is bigger than this, the update will be cut into separate updates
-        double maxTimestep = 1/25.0;
+        glfwSetTime(0); // largely unnecessary
         double lastTime = glfwGetTime();
         glClearColor(0, 0, 0, 0);
         
@@ -215,39 +216,26 @@ public class Window {
         for (Layer l : layers)
             l.framebufferResized(fbWidth, fbHeight);
  
-        // run the rendering loop until the user has attempted to close
-        // the window or has pressed the ESCAPE key.
+        // run the rendering loop until the user has attempted to close the window
         while (!glfwWindowShouldClose(window))
         {
-            // calculate delta from start of last frame
-            double currTime = glfwGetTime();
-            double delta = (currTime - lastTime);
-            lastTime = currTime;
+            // calculate deltaTime from start of last frame
+            currentTime = glfwGetTime();
+            deltaTime = (currentTime - lastTime);
+            lastTime = currentTime;
             if (displayDelta) {
-                double printDelta = (int) (delta * 1000 * 100) / 100.0;
+                double printDelta = (int) (deltaTime * 1000 * 100) / 100.0;
                 glfwSetWindowTitle(window, "Delta: " + printDelta);
             }
 
-            // perform update and render of all layers
-            /*
-            double frametime = Math.min(delta,1/10.0); // hard limit of .1 seconds per update step
-            while (frametime > 0) {
-                // cannot step bigger than maxTimestep
-                // if there is a bigger step, a second update will be called
-                double step = Math.min(maxTimestep, frametime);
-                for (Layer l : layers)
-                    l.update(step);
-                frametime -= step;
-            }
-            */
-            double step = Math.min(maxTimestep, delta);
-            for (Layer l : layers)
-                l.update(step);
+            AudioPlayback.updateMusic();
 
-            // render once per frame
+            for (Layer l : layers)
+                l.update(currentTime, deltaTime);
+            // all updates are performed before all renders
             for (Layer l : layers) {
                 l.makeCurrent();
-                l.render(delta);
+                l.render(currentTime, deltaTime);
             }
 
             glfwSwapBuffers(window); // swap the color buffers
@@ -266,13 +254,15 @@ public class Window {
      * The program will terminate after this call.
      */
     public static void destroy() {
-        // Free the window callbacks and destroy the window
+        ALContext.destroyContext();
+
+        // free the window callbacks and destroy the window
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
-        // Terminate GLFW and free the error callback
+        // terminate GLFW and free the error callback
         glfwTerminate();
         glfwSetErrorCallback(null).free();
-        
+
         System.out.println("GLFW terminated.");
         System.exit(0);
     }
@@ -345,13 +335,12 @@ public class Window {
     
     // Window utilities
     /**
-     * Sets the window title. If delta time information is displaying in
-     * the window title, it will not be disabled.  If delta time information
-     * is disabled later, the name will be reset to the last one provided
-     * to this method.
+     * Sets the window title. If deltaTime time information is displaying in
+     * the window title, it will not be disabled.  If deltaTime time information
+     * is disabled later, the name will be set to the last one provided to this method.
      * @param title 
      */
-    public static void setWindowTitle(String title) {
+    public static void setTitle(String title) {
         windowTitle = title;
         if (window != -1)
             glfwSetWindowTitle(window, title);
@@ -469,4 +458,8 @@ public class Window {
     public static boolean keyPressed(int key) {
         return glfwGetKey(window, key) == 1;
     }
+
+    // Timing utilities
+    public static double delta() { return deltaTime; }
+    public static double time() { return currentTime; }
 }

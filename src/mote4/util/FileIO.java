@@ -1,18 +1,22 @@
 package mote4.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import com.google.common.io.ByteStreams;
 import mote4.scenegraph.Window;
+import org.lwjgl.BufferUtils;
 
 /**
- * Simplifies access to files.
+ * File reading utilities.
  * @author Peter
  */
 public class FileIO {
     /**
-     * Returns a BufferedReader for the given file.
+     * Returns a BufferedReader for a given file.
      * To read resource files, the path should begin with "/res/..."
      * @param filepath
      * @return
@@ -22,26 +26,45 @@ public class FileIO {
         try {
             return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
         } catch (NullPointerException e) {
-            System.err.println("Error loading file '"+filepath+"':");
             e.printStackTrace();
             Window.destroy();
             return null;
         }
     }
+
     /**
-     * Returns an InputStream for the given filepath.
+     * Returns an InputStream for a given filepath.
      * @param filepath
      * @return 
      */
-    private static InputStream getInputStream(String filepath) {
+    public static InputStream getInputStream(String filepath) {
         return ClassLoader.class.getResourceAsStream(filepath);
     }
+
+    public static ByteBuffer getByteBuffer(String filepath) {
+        byte[] file = getByteArray(filepath);
+        ByteBuffer buffer = BufferUtils.createByteBuffer(file.length);
+        buffer.put(file);
+        buffer.flip();
+        return buffer;
+    }
+
+    public static byte[] getByteArray(String filepath) {
+        try {
+            return ByteStreams.toByteArray(getInputStream(filepath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return null;
+        }
+    }
+
     /**
      * Returns the contents of a file as a String.
      * @param filepath
      * @return 
      */
-    public static String readFile(String filepath) {
+    public static String getString(String filepath) {
         BufferedReader reader = getBufferedReader(filepath);
         String line;
         StringBuilder stringBuilder = new StringBuilder();

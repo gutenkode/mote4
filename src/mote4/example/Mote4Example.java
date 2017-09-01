@@ -7,6 +7,7 @@ import mote4.util.shader.ShaderMap;
 import mote4.util.shader.ShaderUtils;
 import mote4.util.shader.Uniform;
 import mote4.util.texture.TextureMap;
+import mote4.util.vertex.FontUtils;
 import mote4.util.vertex.builder.StaticMeshBuilder;
 import mote4.util.vertex.mesh.Mesh;
 import mote4.util.vertex.mesh.MeshMap;
@@ -33,7 +34,7 @@ public class Mote4Example implements Scene {
         glfwSetWindowSizeLimits(Window.getWindowID(), 640, 480, GLFW_DONT_CARE, GLFW_DONT_CARE);
         
         //Window.setCursorHidden(true);
-        Window.setWindowTitle("Engine Test");
+        Window.setTitle("Engine Test");
         Window.displayDeltaInTitle(true); // displays delta time in window title, overrides previous line
 
         glEnable(GL_BLEND);
@@ -51,6 +52,9 @@ public class Mote4Example implements Scene {
         ShaderUtils.addProgram("mote/color.vert", "mote/color.frag", "color");
         // first argument is the filename, second argument is texture's handle
         TextureMap.load("mote/crate", "test");
+        TextureMap.load("mote/font/misterpixel", "font");
+
+        FontUtils.loadMetric("mote/font/misterpixel_metric","misterpixel");
         
         // load a .obj file into the game, boolean value is whether the model should be centered
         Mesh mesh = StaticMeshBuilder.constructVAOFromOBJ("mote/cube", false);
@@ -60,8 +64,9 @@ public class Mote4Example implements Scene {
     
     /////////////////////////////////////////////
     
-    private Transform transform;
+    private Transform transform3D, transform2D;
     private boolean filter = true;
+    private Mesh text;
     private double[] deltas = new double[120];
     private int deltaInd = 0;
 
@@ -69,8 +74,12 @@ public class Mote4Example implements Scene {
     {
         // transformation matrices
         // a Transform has a model, view, and projection matrix
-        transform = new Transform();
-        transform.view.translate(0, 0, -3); // pull the camera back from the origin
+        transform3D = new Transform();
+        transform2D = new Transform();
+
+        FontUtils.useMetric("misterpixel");
+        text = FontUtils.createString("1: Windowed\n2: Fullscreen\n3: Toggle vsync\nSpace: Filtering",
+                .025f,.025f,.05f,.05f);
         
         createKeyCallback();
     }
@@ -112,11 +121,13 @@ public class Mote4Example implements Scene {
     }
 
     @Override
-    public void update(double delta) 
+    public void update(double time, double delta)
     {
-        // rotate the camera view based on delta time
-        transform.view.rotate((float)delta*.5f,   1, 0, 0); // around x axis
-        transform.view.rotate((float)delta*.5f*2, 0, 1, 0); // around y axis
+        // rotate the camera view based on total runtime
+        transform3D.view.setIdentity();
+        transform3D.view.translate(0, 0, -3); // pull the camera back from the origin
+        transform3D.view.rotate((float)time*.5f,   1, 0, 0); // around x axis
+        transform3D.view.rotate((float)time*.5f*2, 0, 1, 0); // around y axis
 
         deltas[deltaInd] = delta;
         deltaInd++;
@@ -124,7 +135,7 @@ public class Mote4Example implements Scene {
     }
 
     @Override
-    public void render(double delta) 
+    public void render(double time, double delta)
     {
         // clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -132,7 +143,7 @@ public class Mote4Example implements Scene {
         // render the cube
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
-        transform.makeCurrent(); // Transform will bind to the CURRENT shader
+        transform3D.makeCurrent(); // Transform will bind to the CURRENT shader
         if (filter)
             TextureMap.bindFiltered("test");
         else
@@ -140,27 +151,37 @@ public class Mote4Example implements Scene {
         MeshMap.render("cube");
 
         // render the framerate graph
+        // only the model matrix is applied to this shader
         ShaderMap.use("color");
         for (int i = 0; i < deltas.length; i++)
         {
             float f = (float)deltas[i]*60;
             Uniform.varFloat("color",f-1,2-f,0,1);
-            transform.model.translate(-0.9925f+(float)i/deltas.length*2,-1,0);
-            transform.model.scale(.005f,f/8,1);
-            transform.model.makeCurrent();
-            transform.model.setIdentity();
+            transform3D.model.translate(-0.9925f+(float)i/deltas.length*2,-1,0);
+            transform3D.model.scale(.005f,f/8,1);
+            transform3D.model.makeCurrent();
+            transform3D.model.setIdentity();
             MeshMap.render("quad");
         }
+
+        // render text
+        glEnable(GL_DEPTH_TEST);
+        ShaderMap.use("texture");
+        TextureMap.bindUnfiltered("font");
+        transform2D.makeCurrent();
+        text.render();
     }
 
     @Override
     public void framebufferResized(int width, int height) 
     {
         // called every time the screen is resized, and called once at program start
-        
-        //transform.projection.setOrthographic(left, top, right, bottom, near, far);
-        //transform.projection.setPerspective(width, height, near, far, fov);
-        transform.projection.setPerspective(width, height, .1f, 100f, 75f);
+
+        //transform2D.projection.setOrthographic(left, top, right, bottom, near, far);
+        //transform3D.projection.setPerspective(width, height, near, far, fov);
+        float aspectRatio = (float)width/height;
+        transform2D.projection.setOrthographic(0, 0, aspectRatio, 1, -1, 1);
+        transform3D.projection.setPerspective(width, height, .1f, 100f, 75f);
     }
 
     @Override

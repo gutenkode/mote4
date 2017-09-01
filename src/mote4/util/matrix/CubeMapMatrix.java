@@ -4,8 +4,8 @@ import java.nio.FloatBuffer;
 import java.util.Stack;
 
 import mote4.util.shader.Uniform;
-import mote4.util.vector.Matrix4f;
-import mote4.util.vector.Vector3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 /**
@@ -49,19 +49,21 @@ public class CubeMapMatrix {
         float x_scale = y_scale / aspectRatio;
         float frustum_length = far - near;
 
-        mat.m00 = x_scale;
-        mat.m11 = y_scale;
-        mat.m22 = -((far + near) / frustum_length);
-        mat.m23 = -1;
-        mat.m32 = -((2 * near * far) / frustum_length);
-        mat.m33 = 0;
+        mat.m00(x_scale);
+        mat.m11(y_scale);
+        mat.m22(-((far + near) / frustum_length));
+        mat.m23(-1);
+        mat.m32(-((2 * near * far) / frustum_length));
+        mat.m33(0);
     }
     
     public void makeCurrent() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16*6);
-        for (Matrix4f mat : matrix)
-            mat.store(buffer);
-        buffer.flip();
+        int i = 0;
+        for (Matrix4f mat : matrix) {
+            mat.get(i, buffer);
+            i += 16;
+        }
         
         Uniform.mat4(uniformName, buffer);
     }

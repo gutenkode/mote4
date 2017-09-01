@@ -1,9 +1,10 @@
 package mote4.util.matrix;
 
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+
 import java.util.Stack;
-import mote4.util.vector.Matrix4f;
-import mote4.util.vector.Vector2f;
-import mote4.util.vector.Vector3f;
 
 /**
  * A transformation matrix is used to set view transformations in a shader.
@@ -14,7 +15,7 @@ public abstract class TransformationMatrix {
     protected Matrix4f matrix;
     protected Stack<Matrix4f> stack;
     
-    public TransformationMatrix() {
+    protected TransformationMatrix() {
         stack = new Stack<>();
     }
     
@@ -35,7 +36,7 @@ public abstract class TransformationMatrix {
      * @param y Y transformation.
      */
     public void translate(float x, float y) {
-        matrix.translate(new Vector2f(x,y));
+        matrix.translate(x, y, 0);
     }
     /**
      * Translates the matrix.
@@ -44,7 +45,7 @@ public abstract class TransformationMatrix {
      * @param z Z transformation.
      */
     public void translate(float x, float y, float z) {
-        matrix.translate(new Vector3f(x,y,z));
+        matrix.translate(x, y, z);
     }
     /**
      * Rotates the matrix. The x y and z parameters specify a vector to rotate around.
@@ -55,7 +56,7 @@ public abstract class TransformationMatrix {
      * @param z Z axis.
      */
     public void rotate(float r, float x, float y, float z) {
-        matrix.rotate(r, new Vector3f(x,y,z));
+        matrix.rotate(r, x, y, z);
     }
     /**
      * Scales the matrix.
@@ -64,23 +65,23 @@ public abstract class TransformationMatrix {
      * @param z Z scale.
      */
     public void scale(float x, float y, float z) {
-        matrix.scale(new Vector3f(x,y,z));
+        matrix.scale(x, y, z);
     }
     /**
-     * Resets the matrix to the identity matrix.
+     * Reset the matrix to the identity matrix.
      */
-    public void setIdentity() { matrix.setIdentity(); }
+    public void setIdentity() { matrix.identity(); }
     
     /**
-     * Pushes a copy of the current matrix onto the stack.
+     * Push a copy of the current matrix onto the stack.
      */
     public void push() {
         Matrix4f mat = new Matrix4f();
-        Matrix4f.load(matrix, mat);
+        matrix.get(mat);
         stack.push(mat);
     }
     /**
-     * Pops the top matrix off the stack.
+     * Pop the top matrix off the stack.
      */
     public void pop() {
         matrix = stack.pop();

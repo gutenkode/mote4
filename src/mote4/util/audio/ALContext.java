@@ -1,12 +1,16 @@
 package mote4.util.audio;
 
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALCCapabilities;
+
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
 
-import mote4.scenegraph.Window;
-import org.lwjgl.openal.*;
+import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  *
@@ -15,28 +19,48 @@ import org.lwjgl.openal.*;
 public class ALContext {
 
     private static boolean created = false;
+    private static long device, context;
 
     /**
-     * Creates the OpenAL context.  This must be called before loading or
-     * using any audio utilities.
+     * Creates the OpenAL context.  
+     * This must be called before loading or using any audio utilities.
      */
     public static void initContext() {
         if (created)
             return;
         // Can call "alc" functions at any time
-        long device = ALC10.alcOpenDevice((ByteBuffer)null);
+        device = alcOpenDevice((ByteBuffer)null);
+        if (device == NULL) {
+            throw new IllegalStateException("Failed to open the default device.");
+        }
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-        long context = ALC10.alcCreateContext(device, (IntBuffer)null);
-        ALC10.alcMakeContextCurrent(context);
+        context = alcCreateContext(device, (IntBuffer)null);
+        if (context == NULL) {
+            throw new IllegalStateException("Failed to create an OpenAL context.");
+        }
+        alcMakeContextCurrent(context);
         AL.createCapabilities(deviceCaps);
 
-        AL10.alListenerfv(AL10.AL_ORIENTATION, new float[] { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
-        AL10.alListener3f(AL10.AL_POSITION, 0, 0, 0);
-        AL10.alListener3f(AL10.AL_VELOCITY, 0, 0, 0);
+        alListenerfv(AL_ORIENTATION, new float[] { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
+        alListener3f(AL_POSITION, 0, 0, 0);
+        alListener3f(AL_VELOCITY, 0, 0, 0);
 
         created = true;
     }
 
     public static boolean isCreated() { return created; }
+
+    public static void destroyContext() {
+        if (created) {
+            AudioPlayback.clear();
+
+            alcSetThreadContext(NULL);
+            alcDestroyContext(context);
+            alcCloseDevice(device);
+
+            System.out.println("OpenAL terminated.");
+            created = false;
+        }
+    }
 }

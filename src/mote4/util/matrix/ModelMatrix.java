@@ -1,8 +1,9 @@
 package mote4.util.matrix;
 
 import java.nio.FloatBuffer;
+
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-import mote4.util.vector.Matrix4f;
 import mote4.util.shader.Uniform;
 
 /**
@@ -12,15 +13,15 @@ import mote4.util.shader.Uniform;
 public class ModelMatrix extends TransformationMatrix {
     
     public ModelMatrix() {
+        super();
         matrix = new Matrix4f();
-        matrix.setIdentity();
+        matrix.identity();
     }
     
     @Override
     public void makeCurrent() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
-        matrix.store(buffer);
-        buffer.flip();
+        matrix.get(buffer);
         
         Uniform.mat4("modelMatrix", buffer);
     }

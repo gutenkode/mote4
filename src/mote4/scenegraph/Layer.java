@@ -37,16 +37,16 @@ public class Layer {
     }
     public Target getTarget() { return target; }
     
-    public void update(double delta) {
+    public void update(double time, double delta) {
         for (Scene s : scenes)
-            s.update(delta);
+            s.update(time, delta);
     }
     public void makeCurrent() {
         target.makeCurrent();
     }
-    public void render(double delta) {
+    public void render(double time, double delta) {
         for (Scene s : scenes)
-            s.render(delta);
+            s.render(time, delta);
     }
     public void framebufferResized(int width, int height) {
         for (Scene s : scenes)

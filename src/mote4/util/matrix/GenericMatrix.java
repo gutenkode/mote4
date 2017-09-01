@@ -2,8 +2,8 @@ package mote4.util.matrix;
 
 import java.nio.FloatBuffer;
 import mote4.util.shader.Uniform;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-import mote4.util.vector.Matrix4f;
 
 /**
  *
@@ -13,9 +13,10 @@ public class GenericMatrix extends TransformationMatrix {
     
     private String uniformName;
     
-    public GenericMatrix(String un) {
+    protected GenericMatrix(String un) {
+        super();
         matrix = new Matrix4f();
-        matrix.setIdentity();
+        matrix.identity();
         //setPerspectiveMatrix(width,height,.1f,100f, 60f);
         //setOrthographicMatrix(0,0,width,height,-1,1);
         uniformName = un;
@@ -39,12 +40,12 @@ public class GenericMatrix extends TransformationMatrix {
         float x_scale = y_scale / aspectRatio;
         float frustum_length = far - near;
 
-        matrix.m00 = x_scale;
-        matrix.m11 = y_scale;
-        matrix.m22 = -((far + near) / frustum_length);
-        matrix.m23 = -1;
-        matrix.m32 = -((2 * near * far) / frustum_length);
-        matrix.m33 = 0;
+        matrix.m00(x_scale);
+        matrix.m11(y_scale);
+        matrix.m22(-((far + near) / frustum_length));
+        matrix.m23(-1);
+        matrix.m32(-((2 * near * far) / frustum_length));
+        matrix.m33(0);
     }
     /**
      * Creates an orthographic projection.
@@ -58,20 +59,19 @@ public class GenericMatrix extends TransformationMatrix {
     public void setOrthographic(float left, float top, float right, float bottom, float near, float far) {
         matrix = new Matrix4f();
         
-        matrix.m00 = 2/(right-left);
-        matrix.m11 = 2/(top-bottom);
-        matrix.m22 = -2/(far-near);
-        matrix.m33 = 1;
-        matrix.m30 = -(right+left)/(right-left);
-        matrix.m31 = -(top+bottom)/(top-bottom);
-        matrix.m32 = -(far+near)/(far-near);
+        matrix.m00(2/(right-left));
+        matrix.m11(2/(top-bottom));
+        matrix.m22(-2/(far-near));
+        matrix.m33(1);
+        matrix.m30(-(right+left)/(right-left));
+        matrix.m31(-(top+bottom)/(top-bottom));
+        matrix.m32(-(far+near)/(far-near));
     }
     
     @Override
     public void makeCurrent() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
-        matrix.store(buffer);
-        buffer.flip();
+        matrix.get(buffer);
         
         Uniform.mat4(uniformName, buffer);
     }
