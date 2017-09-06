@@ -12,15 +12,21 @@ import static org.lwjgl.openal.AL10.alGetSourcei;
  */
 public class AudioPlayback {
 
-    private static boolean playSfx, playMusic;
+    private static boolean playSfx, playMusic, isMusicPlaying;
     private static String currentMusic;
-
     private static ArrayList<Integer> sources;
     private static VorbisDecoder musicDecoder;
     static {
         sources = new ArrayList<>();
         currentMusic = "";
+        playSfx = playMusic = true;
+        isMusicPlaying = false;
     }
+
+    public static void enableSfx(boolean enable) { playSfx = enable; }
+    public static void enableMusic(boolean enable) { playMusic = enable; } // TODO same as other todo in playMusic()
+    public static boolean isSfxEnabled() { return playSfx; }
+    public static boolean isMusicEnabled() { return playMusic; }
 
     /**
      * Play an audio buffer as sfx.
@@ -84,22 +90,27 @@ public class AudioPlayback {
                 Window.destroy();
             }
         }
+        currentMusic = name;
+        isMusicPlaying = true;
     }
 
     public static void stopMusic() {
         if (musicDecoder != null) {
-            //musicDecoder.close();
-            //musicDecoder = null;
             alSourceStop(musicDecoder.source);
+            isMusicPlaying = false;
         }
     }
     public static void pauseMusic() {
-        if (musicDecoder != null)
+        if (musicDecoder != null) {
             alSourcePause(musicDecoder.source);
+            isMusicPlaying = false;
+        }
     }
     public static void resumeMusic() {
-        if (musicDecoder != null)
+        if (musicDecoder != null) {
             alSourcePlay(musicDecoder.source);
+            isMusicPlaying = true;
+        }
     }
 
     /**
@@ -108,7 +119,7 @@ public class AudioPlayback {
     public static void updateMusic() {
         // TODO support fading music in/out
         if (musicDecoder != null) {
-            if (alGetSourcei(musicDecoder.source, AL_SOURCE_STATE) == AL_PLAYING)
+            if (isMusicPlaying)
                 musicDecoder.update();
         }
     }
@@ -143,6 +154,7 @@ public class AudioPlayback {
             sources.clear();
 
             currentMusic = "";
+            isMusicPlaying = false;
             if (musicDecoder != null) {
                 musicDecoder.close();
             }
