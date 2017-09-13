@@ -1,5 +1,6 @@
 package mote4.util.vertex.mesh;
 
+import mote4.scenegraph.Window;
 import mote4.util.vertex.FontUtils;
 
 /**
@@ -13,17 +14,18 @@ public class ScrollingText implements Mesh {
     private VAO vao;
     private boolean destroyed;
     
-    private int index, speed;
+    private double index;
     private String fullStr, writeStr, metric;
     private float xPos, yPos, xScale, yScale;
+    private double charactersPerSecond;
     
-    public ScrollingText(String text, String metric, float xPos, float yPos, float xScale, float yScale, int speed) {
+    public ScrollingText(String text, String metric, float xPos, float yPos, float xScale, float yScale, double cps) {
         destroyed = false;
         this.xPos = xPos;
         this.yPos = yPos;
         this.xScale = xScale;
         this.yScale = yScale;
-        this.speed = speed;
+        charactersPerSecond = cps;
         this.metric = metric;
         
         index = 0;
@@ -38,9 +40,9 @@ public class ScrollingText implements Mesh {
         
         if (index < fullStr.length()) 
         {
-            index += speed;
+            index += Window.delta()*charactersPerSecond;
             index = Math.min(fullStr.length(), index);
-            writeStr = fullStr.substring(0, index);
+            writeStr = fullStr.substring(0, (int)index);
             
             if (vao != null)
                 vao.destroy();
@@ -65,7 +67,7 @@ public class ScrollingText implements Mesh {
 
     @Override
     public void destroy() {
-        if (vao != null)
+        if (!destroyed && vao != null)
             vao.destroy();
         destroyed = true;
     }

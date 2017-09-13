@@ -15,7 +15,7 @@ public abstract class Target {
                   height = -1, 
                   bufferIndex = -1;
     
-    protected static Target current = new EmptyTarget();
+    protected static Target current = null;
     
     /**
      * Get the most recently bound Target.

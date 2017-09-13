@@ -6,7 +6,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 /**
- *
+ * Transformation matrix with a user-definable name.
  * @author Peter
  */
 public class GenericMatrix extends TransformationMatrix {

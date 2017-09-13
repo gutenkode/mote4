@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL20;
 
 /**
  * A FBO with multiple color attachment points.
- * Useful for multiple render targets from a single fragment shader.
+ * Useful for using multiple render targets from a single fragment shader.
  * @author Peter
  */
 public class MultiColorFBO  extends Target {

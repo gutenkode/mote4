@@ -76,7 +76,7 @@ public class AudioPlayback {
         if (!playMusic) // TODO toggling music should simply start/pause a loaded audio buffer, instead of not loading music
             return;
         if (!AudioLoader.vorbisMap.containsKey(name))
-            throw new IllegalArgumentException("Could not find vorbis file '"+name+"'.");
+            throw new IllegalArgumentException("Vorbis file was not specified at runtime: '"+name+"'.");
 
         if (name.equals(currentMusic)) {
             resumeMusic();
@@ -94,18 +94,32 @@ public class AudioPlayback {
         isMusicPlaying = true;
     }
 
+    /**
+     * Stops playback and rewinds the decoder.
+     */
     public static void stopMusic() {
         if (musicDecoder != null) {
             alSourceStop(musicDecoder.source);
+            musicDecoder.rewind();
             isMusicPlaying = false;
         }
     }
+
+    /**
+     * Stops playback without rewinding.
+     * Calling resumeMusic() or playMusic() with the
+     * same song name will resume playing from this point.
+     */
     public static void pauseMusic() {
         if (musicDecoder != null) {
             alSourcePause(musicDecoder.source);
             isMusicPlaying = false;
         }
     }
+
+    /**
+     * If a music decoder exists, play it.
+     */
     public static void resumeMusic() {
         if (musicDecoder != null) {
             alSourcePlay(musicDecoder.source);

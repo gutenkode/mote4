@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL32.*;
 
 /**
- * A DepthBuffer stores the depth buffer only.
+ * A DepthBuffer stores a depth buffer only.
  * Useful for shadow mapping.
  * @author Peter
  */

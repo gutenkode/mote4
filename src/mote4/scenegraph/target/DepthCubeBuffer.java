@@ -9,9 +9,9 @@ import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL32.*;
 
 /**
- * A DepthCubeBuffer stores the depth buffer only.
+ * A DepthCubeBuffer stores a depth buffer only.
  * Six separate textures are stored and mapped to a cube, allowing for
- * omnidirectional shadow mapping.
+ * omnidirectional shadow mapping. Fancy~
  * @author Peter
  */
 public class DepthCubeBuffer extends Target {

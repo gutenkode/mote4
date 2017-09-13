@@ -228,7 +228,7 @@ public class Window {
                 glfwSetWindowTitle(window, "Delta: " + printDelta);
             }
 
-            AudioPlayback.updateMusic();
+            AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
 
             for (Layer l : layers)
                 l.update(currentTime, deltaTime);

@@ -1,15 +1,14 @@
 package mote4.util.matrix;
 
-import java.nio.FloatBuffer;
-import java.util.Stack;
-
 import mote4.util.shader.Uniform;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
+import java.nio.FloatBuffer;
+
 /**
- *
+ * Stores transforms for a cubemap.
  * @author Peter
  */
 public class CubeMapMatrix {
