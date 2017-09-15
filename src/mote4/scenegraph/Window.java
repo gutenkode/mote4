@@ -230,8 +230,24 @@ public class Window {
 
             AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
 
-            for (Layer l : layers)
-                l.update(currentTime, deltaTime);
+            double DELTA_LIMIT = 0.04; // delta time cannot exceed 25fps, to prevent broken physics
+            if (deltaTime > DELTA_LIMIT) {
+                double origDelta = deltaTime;
+                double frameDelta = deltaTime;
+                while (frameDelta > 0) {
+                    if (frameDelta < DELTA_LIMIT)
+                        deltaTime = frameDelta;
+                    else
+                        deltaTime = DELTA_LIMIT;
+                    frameDelta -= deltaTime;
+                    for (Layer l : layers)
+                        l.update(currentTime, deltaTime);
+                }
+                deltaTime = origDelta; // render needs the original delta
+            } else
+                for (Layer l : layers)
+                    l.update(currentTime, deltaTime);
+
             // all updates are performed before all renders
             for (Layer l : layers) {
                 l.makeCurrent();
