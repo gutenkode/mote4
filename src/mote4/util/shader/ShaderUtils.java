@@ -121,9 +121,7 @@ public class ShaderUtils {
      */
     public static int compileShaderFromSource(String source, int type) {
         int id = GL20.glCreateShader(type);
-        //Util.checkGLError();
         GL20.glShaderSource(id, source);
-        //Util.checkGLError();
         GL20.glCompileShader(id);
         
         if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
@@ -132,7 +130,6 @@ public class ShaderUtils {
             Window.destroy();
             return -1;
         }
-        //Util.checkGLError();
         return id;
     }
     /**
@@ -145,12 +142,11 @@ public class ShaderUtils {
         int id = GL20.glCreateProgram();
         for(int shader : shaders) {
             GL20.glAttachShader(id, shader);
-            //Util.checkGLError();
         }
         GL20.glLinkProgram(id);
         GL20.glValidateProgram(id);
         //Util.checkGLError();
-        ShaderMap.addProgram(id, name);
+        ShaderMap.addProgram(id, shaders, name);
         return id;
     }
     /**

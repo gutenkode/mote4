@@ -2,6 +2,8 @@ package mote4.util.shader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+
 import org.lwjgl.opengl.GL20;
 
 /**
@@ -13,27 +15,20 @@ public class ShaderMap {
     private static String currentName;
     private static int currentProgram = 0;
     
-    private static HashMap<String,Integer> programMap = new HashMap<>();
-    private static ArrayList<Integer> shaderMap = new ArrayList<>();
-    
-    /**
-     * Adds the shader's handle to a list of all created shaders.
-     * The list is only used when releasing resources.
-     * @param id 
-     */
-    public static void addShader(int id) {
-        if (!shaderMap.contains(id))
-            shaderMap.add(id);
-    }
+    private static Map<String,Integer> programMap = new HashMap<>();
+    private static Map<Integer, int[]> shaderMap = new HashMap<>();
     
     /**
      * Adds the shader ID to the map of shader programs.
      * @param id The ID of the shader program.
+     * @param shaders List of shaders in this program.
      * @param name The name of the shader.
      */
-    public static void addProgram(int id, String name) {
-        if (!programMap.containsValue(id))
+    public static void addProgram(int id, int[] shaders, String name) {
+        if (!programMap.containsValue(id)) {
             programMap.put(name, id);
+            shaderMap.put(id, shaders);
+        }
     }
     
     /**
@@ -76,7 +71,7 @@ public class ShaderMap {
      * @return The shader ID.
      */
     public static int get(String name) {
-        return programMap.get(name);
+        return programMap.getOrDefault(name, -1);
     }
     
     /**
@@ -87,8 +82,9 @@ public class ShaderMap {
             GL20.glDeleteProgram(i);
         }
         programMap.clear();
-        for (int i : shaderMap)
-            GL20.glDeleteShader(i);
+        for (int[] ii : shaderMap.values())
+            for (int i : ii)
+                GL20.glDeleteShader(i);
         shaderMap.clear();
     }
     
@@ -101,6 +97,12 @@ public class ShaderMap {
         if (programMap.containsKey(name)) {
             int ind = programMap.get(name);
             GL20.glDeleteProgram(ind);
+
+            int[] shaders = shaderMap.get(ind);
+            for (int i : shaders)
+                GL20.glDeleteShader(i);
+            shaderMap.remove(ind);
+
             programMap.remove(name);
         }
     }
