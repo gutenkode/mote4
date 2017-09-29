@@ -29,7 +29,7 @@ public class ViewMatrix extends TransformationMatrix {
     }
 
     @Override
-    public void makeCurrent() {
+    public void bind() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         matrix.get(buffer);
         

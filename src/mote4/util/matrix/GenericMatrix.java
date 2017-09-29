@@ -1,6 +1,8 @@
 package mote4.util.matrix;
 
 import java.nio.FloatBuffer;
+
+import mote4.util.shader.Bindable;
 import mote4.util.shader.Uniform;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -9,7 +11,7 @@ import org.lwjgl.BufferUtils;
  * Transformation matrix with a user-definable name.
  * @author Peter
  */
-public class GenericMatrix extends TransformationMatrix {
+public class GenericMatrix extends TransformationMatrix implements Bindable {
     
     private String uniformName;
     
@@ -69,7 +71,7 @@ public class GenericMatrix extends TransformationMatrix {
     }
     
     @Override
-    public void makeCurrent() {
+    public void bind() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         matrix.get(buffer);
         

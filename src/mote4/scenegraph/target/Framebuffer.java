@@ -1,9 +1,10 @@
 package mote4.scenegraph.target;
 
 import mote4.scenegraph.Window;
-import static org.lwjgl.opengl.ARBFramebufferObject.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.ARBFramebufferObject.glBindFramebuffer;
 import org.lwjgl.opengl.GL11;
+
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 /**
  * Represents the standard OpenGL framebuffer.

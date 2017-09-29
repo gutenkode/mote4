@@ -1,5 +1,6 @@
 package mote4.util.matrix;
 
+import mote4.util.shader.Bindable;
 import org.joml.Matrix4f;
 
 import java.util.Stack;
@@ -8,7 +9,7 @@ import java.util.Stack;
  * A transformation matrix is used to set view transformations in a shader.
  * @author Peter
  */
-public abstract class TransformationMatrix {
+public abstract class TransformationMatrix implements Bindable {
     
     protected Matrix4f matrix;
     protected Stack<Matrix4f> stack;
@@ -16,17 +17,6 @@ public abstract class TransformationMatrix {
     protected TransformationMatrix() {
         stack = new Stack<>();
     }
-    
-    /**
-     * Makes this transformation matrix current.
-     */
-    public abstract void makeCurrent();
-    
-    /**
-     * Returns the matrix.
-     * @return The matrix.
-     */
-    public Matrix4f matrix() { return matrix; }
     
     /**
      * Translates the matrix.

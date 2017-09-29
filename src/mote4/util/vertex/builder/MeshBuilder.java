@@ -2,6 +2,8 @@ package mote4.util.vertex.builder;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
+import mote4.util.ErrorUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
@@ -9,13 +11,14 @@ import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import mote4.util.FileIO;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 import mote4.util.vertex.mesh.VAO;
 
 /**
- *
+ * Utility for creating meshes.  Supports vertex coordinates, texture coordinates,
+ * colors, and normals only.  StaticMeshBuilder can create a mesh in one (long)
+ * method call, but is less flexible.
  * @author Peter
  */
 public class MeshBuilder {
@@ -87,15 +90,16 @@ public class MeshBuilder {
     }
     
     public VAO constructVAO(int primitiveType) {
-        
         checkCompleteness();
         
-        int vaoId = GL30.glGenVertexArrays(); // construct the VAO
+        int vaoId = glGenVertexArrays(); // construct the VAO
+        ErrorUtils.checkGLError();
         ArrayList<Integer> vbos = new ArrayList<>();
         ArrayList<Integer> attribs = new ArrayList<>();
         
         // bind the vertex array
-        GL30.glBindVertexArray(vaoId); // "start recording the calls I make.."
+        glBindVertexArray(vaoId); // "start recording the calls I make.."
+        ErrorUtils.checkGLError();
         
         {
             int vertexVboId = glGenBuffers(); // VBO for vertices
@@ -111,12 +115,13 @@ public class MeshBuilder {
             vertexData.put(fArray);
             vertexData.flip();
 
-            GL20.glEnableVertexAttribArray(VERTEX_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(VERTEX_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, vertexVboId);
             glBufferData(GL_ARRAY_BUFFER, vertexData, vertexDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                VERTEX_ATTRIB,      // shader attribute
                vertexSize,         // size
                GL11.GL_FLOAT,      // type
@@ -124,6 +129,7 @@ public class MeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
+            ErrorUtils.checkGLError();
             
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
@@ -143,12 +149,13 @@ public class MeshBuilder {
             colorData.put(fArray);
             colorData.flip();
 
-            GL20.glEnableVertexAttribArray(COLOR_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(COLOR_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
             glBufferData(GL_ARRAY_BUFFER, colorData, colorDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                COLOR_ATTRIB,       // shader attribute
                colorSize,          // size
                GL11.GL_FLOAT,      // type
@@ -156,7 +163,8 @@ public class MeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
-            
+            ErrorUtils.checkGLError();
+
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
         
@@ -175,12 +183,13 @@ public class MeshBuilder {
             texCoordData.put(fArray);
             texCoordData.flip();
 
-            GL20.glEnableVertexAttribArray(TEXCOORD_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(TEXCOORD_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, texCoordVboId);
             glBufferData(GL_ARRAY_BUFFER, texCoordData, texDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                TEXCOORD_ATTRIB,    // shader attribute
                texSize,            // size
                GL11.GL_FLOAT,      // type
@@ -188,7 +197,8 @@ public class MeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
-            
+            ErrorUtils.checkGLError();
+
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
         
@@ -207,12 +217,13 @@ public class MeshBuilder {
             normalData.put(fArray);
             normalData.flip();
 
-            GL20.glEnableVertexAttribArray(NORMAL_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(NORMAL_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, normalVboId);
             glBufferData(GL_ARRAY_BUFFER, normalData, normalDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                NORMAL_ATTRIB,      // shader attribute
                3,                  // size
                GL11.GL_FLOAT,      // type
@@ -220,12 +231,13 @@ public class MeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
-            
+            ErrorUtils.checkGLError();
+
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
         
         // unbind the VAO
-        GL30.glBindVertexArray(0);
+        glBindVertexArray(0);
         
         // pass the list of VBO handles to the VAO object
         int[] vboArray = new int[vbos.size()];
@@ -236,7 +248,7 @@ public class MeshBuilder {
         int[] attribArray = new int[attribs.size()];
         for (int i = 0; i < attribArray.length; i++)
             attribArray[i] = attribs.get(i);
-        
+
         return new VAO(vaoId, vboArray, attribArray, primitiveType, vertices.size()/vertexSize); // wrap it all up nicely
     }
     

@@ -5,7 +5,7 @@ import mote4.scenegraph.target.Target;
 
 /**
  * A Layer contains a Target and a list of Scenes to render.
- * Each Layer is intended to have a unique Target.  Multiple scenes that
+ * Each Layer is intended to have a unique Target.  Multiple Scenes that
  * need to be rendered to the same Target should be in the same Layer.
  * @author Peter
  */

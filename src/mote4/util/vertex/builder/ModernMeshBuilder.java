@@ -1,6 +1,8 @@
 package mote4.util.vertex.builder;
 
 import java.util.ArrayList;
+
+import mote4.util.ErrorUtils;
 import mote4.util.vertex.mesh.VAO;
 import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -31,11 +33,13 @@ public class ModernMeshBuilder {
         int size = checkCompleteness();
         
         int vaoId = glGenVertexArrays(); // construct the VAO
+        ErrorUtils.checkGLError();
         int[] vboArray = new int[attribs.size()];
         int[] attribArray = new int[attribs.size()];
         
         // bind the vertex array
         glBindVertexArray(vaoId); // begin building the VAO
+        ErrorUtils.checkGLError();
         
         // build all attribs
         for (int i = 0; i < vboArray.length; i++) {
@@ -46,7 +50,7 @@ public class ModernMeshBuilder {
         
         // unbind the VAO
         glBindVertexArray(0);
-        
+
         return new VAO(vaoId, vboArray, attribArray, primitiveType, size); // wrap it all up nicely
     }
     

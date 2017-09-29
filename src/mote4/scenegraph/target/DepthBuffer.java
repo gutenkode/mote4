@@ -2,9 +2,9 @@ package mote4.scenegraph.target;
 
 import mote4.util.texture.TextureMap;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.ARBFramebufferObject.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.*;
 
 /**

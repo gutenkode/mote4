@@ -1,6 +1,7 @@
 package mote4.util.audio;
 
 import mote4.scenegraph.Window;
+import mote4.util.ErrorUtils;
 import mote4.util.FileIO;
 
 import java.io.BufferedReader;
@@ -58,9 +59,7 @@ public class AudioLoader {
     }
     public static void loadWav(String filepath, String name) {
         int buffer = alGenBuffers();
-
-        if (alGetError() != AL_NO_ERROR)
-            throw new RuntimeException("Error creating OpenAL buffer.");
+        ErrorUtils.checkALError();
 
         WaveData waveFile = WaveData.create("res/audio/"+filepath+".wav");
         if (waveFile == null) {

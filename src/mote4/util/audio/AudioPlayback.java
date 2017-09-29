@@ -1,6 +1,7 @@
 package mote4.util.audio;
 
 import mote4.scenegraph.Window;
+import mote4.util.ErrorUtils;
 
 import java.util.ArrayList;
 
@@ -65,6 +66,8 @@ public class AudioPlayback {
         alSourcef(source, AL_GAIN, 1f);
         alSourcef(source, AL_PITCH, 1f);
         alSourcePlay(source);
+
+        ErrorUtils.checkALError();
     }
 
     /**
@@ -92,6 +95,8 @@ public class AudioPlayback {
         }
         currentMusic = name;
         isMusicPlaying = true;
+
+        ErrorUtils.checkALError();
     }
 
     /**
@@ -140,18 +145,14 @@ public class AudioPlayback {
 
     private static int createSource() {
         int source = alGenSources();
-
-        if (alGetError() != AL_NO_ERROR)
-            throw new RuntimeException("Error creating OpenAL source.");
+        ErrorUtils.checkALError();
 
         alSourcef (source, AL_PITCH, 1f );
         alSourcef (source, AL_GAIN, 1f );
         alSource3f(source, AL_POSITION, 0f, 0f, 0f );
         alSource3f(source, AL_VELOCITY, 0f, 0f, 0f );
 
-        if (alGetError() != AL_NO_ERROR)
-            throw new RuntimeException("Error creating OpenAL source.");
-
+        ErrorUtils.checkALError();
         return source;
     }
 
@@ -159,18 +160,23 @@ public class AudioPlayback {
      * Deletes all currently loaded sources and buffers.
      */
     public static void clear() {
-        if (ALContext.isCreated()) {
-            for (int i : AudioLoader.bufferMap.values())
-                alDeleteBuffers(i);
-            AudioLoader.bufferMap.clear();
+        if (ALContext.isCreated())
+        {
             for (int i : sources)
                 alDeleteSources(i);
+            ErrorUtils.checkALError();
             sources.clear();
+
+            for (int i : AudioLoader.bufferMap.values())
+                alDeleteBuffers(i);
+            ErrorUtils.checkALError();
+            AudioLoader.bufferMap.clear();
 
             currentMusic = "";
             isMusicPlaying = false;
             if (musicDecoder != null) {
                 musicDecoder.close();
+                ErrorUtils.checkALError();
             }
         }
     }

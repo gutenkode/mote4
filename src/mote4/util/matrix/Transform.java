@@ -1,13 +1,14 @@
 package mote4.util.matrix;
 
+import mote4.util.shader.Bindable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 /**
- *
+ * Encapsulates a projection, view, and model matrix in one object.
  * @author Peter
  */
-public class Transform {
+public class Transform implements Bindable {
     public ProjectionMatrix projection;
     public ViewMatrix view;
     public ModelMatrix model;
@@ -17,10 +18,12 @@ public class Transform {
         view = new ViewMatrix();
         model = new ModelMatrix();
     }
-    public void makeCurrent() {
-        projection.makeCurrent();
-        view.makeCurrent();
-        model.makeCurrent();
+
+    @Override
+    public void bind() {
+        projection.bind();
+        view.bind();
+        model.bind();
     }
 
     /**

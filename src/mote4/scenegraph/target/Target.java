@@ -1,7 +1,7 @@
 package mote4.scenegraph.target;
 
-import static org.lwjgl.opengl.ARBFramebufferObject.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.ARBFramebufferObject.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import org.lwjgl.opengl.GL11;
 
 /**

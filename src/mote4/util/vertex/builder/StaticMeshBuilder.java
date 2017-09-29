@@ -2,6 +2,8 @@ package mote4.util.vertex.builder;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
+import mote4.util.ErrorUtils;
 import mote4.util.FileIO;
 import mote4.util.vertex.OBJLoader;
 import mote4.util.vertex.mesh.Mesh;
@@ -13,11 +15,11 @@ import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
- *
+ * Quick and dirty mesh creation utility.
  * @author Peter
  */
 public class StaticMeshBuilder {
@@ -42,12 +44,13 @@ public class StaticMeshBuilder {
             throw new IllegalArgumentException("GL_QUADS is not supported.");
         checkCompleteness(vsize,vertices,tsize,texCoords,csize,colors,normals);
         
-        int vaoId = GL30.glGenVertexArrays(); // construct the VAO
+        int vaoId = glGenVertexArrays(); // construct the VAO
+        ErrorUtils.checkGLError();
         ArrayList<Integer> vbos = new ArrayList<>();
         ArrayList<Integer> attribs = new ArrayList<>();
         
         // bind the vertex array
-        GL30.glBindVertexArray(vaoId); // "start recording the calls I make.."
+        glBindVertexArray(vaoId); // "start recording the calls I make.."
         
         {
             int vertexVboId = glGenBuffers(); // VBO for vertices
@@ -58,12 +61,13 @@ public class StaticMeshBuilder {
             vertexData.put(vertices);
             vertexData.flip();
 
-            GL20.glEnableVertexAttribArray(VERTEX_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(VERTEX_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, vertexVboId);
             glBufferData(GL_ARRAY_BUFFER, vertexData, vertexDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                 VERTEX_ATTRIB,      // shader attribute
                 vsize,              // size
                 GL11.GL_FLOAT,      // type
@@ -71,6 +75,7 @@ public class StaticMeshBuilder {
                 0,                  // stride
                 0                   // array buffer offset
             );
+            ErrorUtils.checkGLError();
             
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
@@ -85,12 +90,13 @@ public class StaticMeshBuilder {
             colorData.put(colors);
             colorData.flip();
 
-            GL20.glEnableVertexAttribArray(COLOR_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(COLOR_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
             glBufferData(GL_ARRAY_BUFFER, colorData, colorDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                 COLOR_ATTRIB,       // shader attribute
                 csize,              // size
                 GL11.GL_FLOAT,      // type
@@ -98,6 +104,7 @@ public class StaticMeshBuilder {
                 0,                  // stride
                 0                   // array buffer offset
             );
+            ErrorUtils.checkGLError();
             
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
@@ -113,12 +120,13 @@ public class StaticMeshBuilder {
             texCoordData.put(texCoords);
             texCoordData.flip();
 
-            GL20.glEnableVertexAttribArray(TEXCOORD_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(TEXCOORD_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, texCoordVboId);
             glBufferData(GL_ARRAY_BUFFER, texCoordData, texDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                TEXCOORD_ATTRIB,    // shader attribute
                tsize,              // size
                GL11.GL_FLOAT,      // type
@@ -126,6 +134,7 @@ public class StaticMeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
+            ErrorUtils.checkGLError();
             
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
@@ -140,12 +149,13 @@ public class StaticMeshBuilder {
             normalData.put(normals);
             normalData.flip();
 
-            GL20.glEnableVertexAttribArray(NORMAL_ATTRIB);  // record in VAO
+            glEnableVertexAttribArray(NORMAL_ATTRIB);  // record in VAO
+            ErrorUtils.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, normalVboId);
             glBufferData(GL_ARRAY_BUFFER, normalData, normalDrawHint);
 
-            GL20.glVertexAttribPointer(
+            glVertexAttribPointer(
                NORMAL_ATTRIB,      // shader attribute
                3,                  // size
                GL11.GL_FLOAT,      // type
@@ -153,12 +163,13 @@ public class StaticMeshBuilder {
                0,                  // stride
                0                   // array buffer offset
             );
+            ErrorUtils.checkGLError();
             
             glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
         }
         
         // unbind the VAO
-        GL30.glBindVertexArray(0);
+        glBindVertexArray(0);
         
         // pass the list of VBO handles to the VAO object
         int[] vboArray = new int[vbos.size()];
@@ -169,7 +180,7 @@ public class StaticMeshBuilder {
         int[] attribArray = new int[attribs.size()];
         for (int i = 0; i < attribArray.length; i++)
             attribArray[i] = attribs.get(i);
-        
+
         return new VAO(vaoId, vboArray, attribArray, primitiveType, vertices.length/vsize); // wrap it all up nicely
     }
     

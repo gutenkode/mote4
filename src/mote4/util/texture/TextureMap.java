@@ -7,12 +7,15 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 import mote4.scenegraph.Window;
+import mote4.util.ErrorUtils;
 import mote4.util.FileIO;
 import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 /**
  * Stores, manages, and binds OpenGL texture handles.
+ * TODO restructure the load() code, currently
  * @author Peter
  */
 public class TextureMap {
@@ -92,8 +95,8 @@ public class TextureMap {
         
         if (bytesPerPixel == 4)
             // RGBA
-            for(int y = 0; y < image.getHeight(); y++){
-                for(int x = 0; x < image.getWidth(); x++){
+            for(int y = 0; y < image.getHeight(); y++) {
+                for(int x = 0; x < image.getWidth(); x++) {
                     int pixel = pixels[y * image.getWidth() + x];
                     buffer.put((byte) ((pixel >> 16) & 0xFF));      // Red component
                     buffer.put((byte) ((pixel >> 8)  & 0xFF));      // Green component
@@ -114,26 +117,25 @@ public class TextureMap {
         
         buffer.flip(); // FOR THE LOVE OF GOD DO NOT FORGET THIS
         
-        // You now have a ByteBuffer filled with the color data of each pixel.
-        // Now just create a texture ID and bind it. Then you can load it using
-        // whatever OpenGL method you want, for example:
+        // 'buffer' is now the raw color data of the image.
         
-        int textureID = glGenTextures(); //Generate texture ID
-        glBindTexture(GL_TEXTURE_2D, textureID); //Bind texture ID
+        int textureID = glGenTextures(); // Generate texture ID
+        glBindTexture(GL_TEXTURE_2D, textureID); // Bind texture ID
         
-        //Setup wrap mode
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        
-        //Setup texture scaling filtering
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // set wrap mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        // set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR/*_MIPMAP_LINEAR*/);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         
         //Send texel data to OpenGL
         if (bytesPerPixel == 4)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image.getWidth(), image.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+        //glGenerateMipmap(GL_TEXTURE_2D);
+        ErrorUtils.checkGLError();
         Texture tex = new Texture(textureID, GL_TEXTURE_2D);
         textureMap.put(name, tex);
         return tex;
@@ -184,7 +186,7 @@ public class TextureMap {
     }
     
     /**
-     * Binds the texture with filtering.
+     * Binds the texture with linear filtering.
      * @param name The texture to bind.
      */
     public static void bindFiltered(String name) {
@@ -195,7 +197,7 @@ public class TextureMap {
         }
     }
     /**
-     * Binds the texture with no filtering.
+     * Binds the texture with nearest-neighbor filtering.
      * @param name The texture to bind.
      */
     public static void bindUnfiltered(String name) {
@@ -240,11 +242,13 @@ public class TextureMap {
     /**
      * Sets the number of bytes to be used for each pixel in a texture.
      * 3 bytes is RGB, 4 bytes is RGBA
-     * No other number will be applied.
+     * No other number will be used.
      * @param bytes 3 or 4 bytes
      */
     public static void setBytesPerPixel(int bytes) {
         if (bytes == 3 || bytes == 4)
             bytesPerPixel = bytes;
+        else
+            throw new IllegalArgumentException("Invalid bytesPerPixel: "+bytes);
     }
 }

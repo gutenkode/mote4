@@ -5,16 +5,22 @@ import java.awt.Toolkit;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import mote4.scenegraph.target.Framebuffer;
+import mote4.util.ErrorUtils;
 import mote4.util.audio.ALContext;
 import mote4.util.audio.AudioPlayback;
+import mote4.util.shader.ShaderMap;
+import mote4.util.texture.TextureMap;
+import mote4.util.vertex.mesh.MeshMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 import static org.lwjgl.system.MemoryUtil.*;
  
 /**
@@ -95,11 +101,12 @@ public class Window {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
+        ErrorUtils.checkGLError();
 
-        System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
+        System.out.println("OpenGL version: " + glGetString(GL_VERSION));
         System.out.println("LWJGL version:  " + Version.getVersion());
-        System.out.println("GLSL Version:   " + GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION));
-        System.out.println("Renderer:       " + GL11.glGetString(GL11.GL_RENDERER));
+        System.out.println("GLSL Version:   " + glGetString(GL_SHADING_LANGUAGE_VERSION));
+        System.out.println("Renderer:       " + glGetString(GL_RENDERER));
     }
     private static void createContext(int initWidth, int initHeight, boolean fullscreen, boolean percent, double percentHeight, double aspectRatio) {
         // Setup an error callback. The default implementation
@@ -158,17 +165,21 @@ public class Window {
         // make the window visible
         glfwShowWindow(window);
     }
-    private static void createCallbacks() {
+
+    private static void createCallbacks()
+    {
         // key callback, called every time a key is pressed, repeated, or released
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
         });
+
         // callback for mouse position
         glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
             cursorX = xpos;
             cursorY = ypos;
         });
+
         // callbacks for window and framebuffer size
         glfwSetWindowSizeCallback(window, (window, width, height) -> {
             windowWidth = width;
@@ -181,10 +192,12 @@ public class Window {
                 for (Layer l : layers)
                     l.framebufferResized(fbWidth, fbHeight); // re-evaluate ALL scenes, just to be safe
         });
+
         // callback for window focus gain/loss
         glfwSetWindowFocusCallback(window, (window, focused) -> {
             windowHasFocus = focused;
         });
+
         // initialize values
         IntBuffer b1 = BufferUtils.createIntBuffer(1);
         IntBuffer b2 = BufferUtils.createIntBuffer(1);
@@ -204,6 +217,10 @@ public class Window {
     }
 
     public static void loop() { loop(targetFps); }
+    /**
+     * Run the game loop with the current list of Layers and Scenes.
+     * @param fps The framerate to run at. Vsync overrides any value.  A value <=0 means unlimited framerate.
+     */
     public static void loop(int fps) {
         glfwSetTime(0); // largely unnecessary
         double lastTime = glfwGetTime();
@@ -217,70 +234,89 @@ public class Window {
             l.framebufferResized(fbWidth, fbHeight);
  
         // run the rendering loop until the user has attempted to close the window
-        while (!glfwWindowShouldClose(window))
-        {
-            // calculate deltaTime from start of last frame
-            currentTime = glfwGetTime();
-            deltaTime = (currentTime - lastTime);
-            lastTime = currentTime;
-            if (displayDelta) {
-                double printDelta = (int) (deltaTime * 1000 * 100) / 100.0;
-                glfwSetWindowTitle(window, "Delta: " + printDelta);
-            }
+        try {
+            while (!glfwWindowShouldClose(window)) {
+                // calculate deltaTime from start of last frame
+                currentTime = glfwGetTime();
+                deltaTime = (currentTime - lastTime);
+                lastTime = currentTime;
+                if (displayDelta) {
+                    double printDelta = (int) (deltaTime * 1000 * 100) / 100.0;
+                    glfwSetWindowTitle(window, "Delta: " + printDelta);
+                }
 
-            AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
+                AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
 
-            double DELTA_LIMIT = 0.04; // delta time cannot exceed 25fps, to prevent broken physics
-            if (deltaTime > DELTA_LIMIT) {
-                double origDelta = deltaTime;
-                double frameDelta = deltaTime;
-                while (frameDelta > 0) {
-                    if (frameDelta < DELTA_LIMIT)
-                        deltaTime = frameDelta;
-                    else
-                        deltaTime = DELTA_LIMIT;
-                    frameDelta -= deltaTime;
+                double DELTA_LIMIT = 0.04; // delta time cannot exceed 25fps, to prevent broken physics
+                if (deltaTime > DELTA_LIMIT) {
+                    double origDelta = deltaTime;
+                    double frameDelta = deltaTime;
+                    while (frameDelta > 0) {
+                        if (frameDelta < DELTA_LIMIT)
+                            deltaTime = frameDelta;
+                        else
+                            deltaTime = DELTA_LIMIT;
+                        frameDelta -= deltaTime;
+                        for (Layer l : layers)
+                            l.update(currentTime, deltaTime);
+                    }
+                    deltaTime = origDelta; // render needs the original delta
+                } else
                     for (Layer l : layers)
                         l.update(currentTime, deltaTime);
+
+                // all updates are performed before all renders
+                for (Layer l : layers) {
+                    l.makeCurrent();
+                    l.render(currentTime, deltaTime);
                 }
-                deltaTime = origDelta; // render needs the original delta
-            } else
-                for (Layer l : layers)
-                    l.update(currentTime, deltaTime);
 
-            // all updates are performed before all renders
-            for (Layer l : layers) {
-                l.makeCurrent();
-                l.render(currentTime, deltaTime);
+                glfwSwapBuffers(window); // swap the color buffers
+
+                // Poll for window events. The key callback above will only be
+                // invoked during this call.
+                glfwPollEvents();
+
+                if (!isFullscreen || !useVsync) // sync manually if vsync is disabled or in windowed mode
+                    sync(fps);
             }
-
-            glfwSwapBuffers(window); // swap the color buffers
-
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
-            glfwPollEvents();
-
-            if (!isFullscreen || !useVsync) // sync manually if vsync is disabled or in windowed mode
-                sync(fps);
+            System.out.println("Window was closed, terminating...");
+        } catch (Exception e) {
+            System.err.println("Uncaught exception in game loop:");
+            e.printStackTrace();
+        } finally {
+            destroy();
         }
-        destroy();
     }
     /**
      * Shuts down GLFW and all resources used in the engine.
-     * The program will terminate after this call.
+     * The program will shut down after this call.
      */
     public static void destroy() {
-        ALContext.destroyContext();
+        try {
+            System.out.println("Shutting down...");
+            ALContext.destroyContext(); // deletes all audio buffers and sources
 
-        // free the window callbacks and destroy the window
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
-        // terminate GLFW and free the error callback
-        glfwTerminate();
-        glfwSetErrorCallback(null).free();
+            MeshMap.clear();
+            ShaderMap.clear();
+            TextureMap.clear();
 
-        System.out.println("GLFW terminated.");
-        System.exit(0);
+            // free the window callbacks and destroy the window
+            glfwFreeCallbacks(window);
+            glfwDestroyWindow(window);
+            // terminate GLFW and free the error callback
+            glfwTerminate();
+            glfwSetErrorCallback(null).free();
+
+            System.out.println("GLFW terminated.");
+        } catch (Exception e) {
+            System.err.println("An error occurred while shutting down:");
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            System.out.println("Terminated normally.");
+            System.exit(0);
+        }
     }
 
     /**

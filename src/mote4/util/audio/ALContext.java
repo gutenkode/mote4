@@ -1,5 +1,6 @@
 package mote4.util.audio;
 
+import mote4.util.ErrorUtils;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -28,17 +29,17 @@ public class ALContext {
     public static void initContext() {
         if (created)
             return;
+
         // Can call "alc" functions at any time
         device = alcOpenDevice((ByteBuffer)null);
-        if (device == NULL) {
+        if (device == NULL)
             throw new IllegalStateException("Failed to open the default device.");
-        }
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
         context = alcCreateContext(device, (IntBuffer)null);
-        if (context == NULL) {
+        if (context == NULL)
             throw new IllegalStateException("Failed to create an OpenAL context.");
-        }
+
         alcMakeContextCurrent(context);
         AL.createCapabilities(deviceCaps);
 
@@ -46,6 +47,7 @@ public class ALContext {
         alListener3f(AL_POSITION, 0, 0, 0);
         alListener3f(AL_VELOCITY, 0, 0, 0);
 
+        ErrorUtils.checkALError();
         created = true;
     }
 

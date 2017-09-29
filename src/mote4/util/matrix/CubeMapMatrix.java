@@ -1,5 +1,6 @@
 package mote4.util.matrix;
 
+import mote4.util.shader.Bindable;
 import mote4.util.shader.Uniform;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -11,7 +12,7 @@ import java.nio.FloatBuffer;
  * Stores transforms for a cubemap.
  * @author Peter
  */
-public class CubeMapMatrix {
+public class CubeMapMatrix implements Bindable {
 
     protected Matrix4f[] matrix;
     private final String uniformName;
@@ -55,8 +56,9 @@ public class CubeMapMatrix {
         mat.m32(-((2 * near * far) / frustum_length));
         mat.m33(0);
     }
-    
-    public void makeCurrent() {
+
+    @Override
+    public void bind() {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16*6);
         int i = 0;
         for (Matrix4f mat : matrix) {

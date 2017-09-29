@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import mote4.util.ErrorUtils;
 import org.lwjgl.opengl.GL20;
 
 /**
- *
+ * Global store for shaders.
  * @author Peter
  */
 public class ShaderMap {
 
-    private static String currentName;
-    private static int currentProgram = 0;
+    private static String currentName = null;
+    private static int currentProgram = 0; // 0 = fixed function
     
     private static Map<String,Integer> programMap = new HashMap<>();
     private static Map<Integer, int[]> shaderMap = new HashMap<>();
@@ -24,7 +25,7 @@ public class ShaderMap {
      * @param shaders List of shaders in this program.
      * @param name The name of the shader.
      */
-    public static void addProgram(int id, int[] shaders, String name) {
+    public static void add(int id, int[] shaders, String name) {
         if (!programMap.containsValue(id)) {
             programMap.put(name, id);
             shaderMap.put(id, shaders);
@@ -48,7 +49,7 @@ public class ShaderMap {
     }
     
     /**
-     * Enables fixed-function pipeline rendering.
+     * Switches to fixed-function pipeline rendering.
      */
     public static void useFixedFunction() {
         GL20.glUseProgram(0);
@@ -60,9 +61,7 @@ public class ShaderMap {
      * Returns the ID of the current program, as set in this class.
      * @return The ID of the program.
      */
-    public static int getCurrent() {
-        return currentProgram;
-    }
+    public static int getCurrent() { return currentProgram; }
     public static String getCurrentName() { return currentName; }
     
     /**
@@ -73,9 +72,30 @@ public class ShaderMap {
     public static int get(String name) {
         return programMap.getOrDefault(name, -1);
     }
-    
+
     /**
-     * Deletes all shader programs in the map, and all shaders created through ShaderUtils.createShader().
+     * If the specified program is stored in this map,
+     * it will be removed and deleted along with its shaders.
+     * @param name
+     */
+    public static void delete(String name) {
+        if (programMap.containsKey(name)) {
+            int ind = programMap.get(name);
+
+            int[] shaders = shaderMap.get(ind);
+            for (int i : shaders)
+                GL20.glDeleteShader(i);
+            shaderMap.remove(ind);
+
+            GL20.glDeleteProgram(ind);
+            programMap.remove(name);
+
+            ErrorUtils.checkGLError();
+        }
+    }
+
+    /**
+     * Deletes all shaders and programs in the map.
      */
     public static void clear() {
         for (int i : programMap.values()) {
@@ -87,23 +107,5 @@ public class ShaderMap {
                 GL20.glDeleteShader(i);
         shaderMap.clear();
     }
-    
-    /**
-     * If the specified program is stored in this map, it will be removed and deleted.
-     * This method does not delete shaders, only programs.
-     * @param name 
-     */
-    public static void delete(String name) {
-        if (programMap.containsKey(name)) {
-            int ind = programMap.get(name);
-            GL20.glDeleteProgram(ind);
 
-            int[] shaders = shaderMap.get(ind);
-            for (int i : shaders)
-                GL20.glDeleteShader(i);
-            shaderMap.remove(ind);
-
-            programMap.remove(name);
-        }
-    }
 }

@@ -2,6 +2,7 @@ package mote4.example;
 
 import mote4.scenegraph.Scene;
 import mote4.scenegraph.Window;
+import mote4.util.ErrorUtils;
 import mote4.util.matrix.Transform;
 import mote4.util.shader.ShaderMap;
 import mote4.util.shader.ShaderUtils;
@@ -16,16 +17,26 @@ import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Example project in Mote4.
- * Press space to enable/disable texture filtering.
  * @author Peter
  */
 public class Mote4Example implements Scene {
 
     public static void main(String[] args) 
     {
-        System.setProperty("java.awt.headless", "true"); // prevents ImageIO from hanging on OS X
+        /*
+         * Basic flow of a project in this engine:
+         * - initialize the context with the Window class
+         * - load resources like shaders and textures
+         * - create one or more Scene objects and add them to Window
+         * - begin the game loop with Window.loop()
+         *
+         * Window stores Layers which store Scenes.  Usually you don't need to care about Layers.
+         */
+
+        ErrorUtils.debug(true);
+        System.setProperty("java.awt.headless", "true"); // prevents ImageIO from hanging on OS X (a bug)
         // default windowed resolution, window can be freely resized by default
-        Window.initWindowedPercent(.75, 16/10.0);
+        Window.initWindowedPercent(.75, 16.0/9.0);
         //Window.initFullscreen();
         Window.setVsync(true);
         Window.displayDeltaInTitle(true);
@@ -44,50 +55,33 @@ public class Mote4Example implements Scene {
         Window.addScene(new Mote4Example());
         Window.loop(60); // run the game loop, default 60fps
     }
+
     private static void loadResources() 
     {
-        // create a shader that can use a texture to render vertex data
+        // create a shader
         // first two arguments are source files, last argument is the shader's handle
         ShaderUtils.addProgram("mote/texture.vert", "mote/texture.frag", "texture");
         ShaderUtils.addProgram("mote/color.vert", "mote/color.frag", "color");
         // first argument is the filename, second argument is texture's handle
-        TextureMap.load("mote/crate", "test");
+        TextureMap.load("mote/crate", "test_tex");
         TextureMap.load("mote/font/misterpixel", "font");
-
+        // character width metrics for a font
         FontUtils.loadMetric("mote/font/misterpixel_metric","misterpixel");
         
         // load a .obj file into the game, boolean value is whether the model should be centered
         Mesh mesh = StaticMeshBuilder.constructVAOFromOBJ("mote/cube", false);
-        MeshMap.add(mesh, "cube");
+        MeshMap.add(mesh, "test_model");
+        // default quad
         MeshMap.add(StaticMeshBuilder.loadQuadMesh(), "quad");
-    }
-    
-    /////////////////////////////////////////////
-    
-    private Transform transform3D, transform2D;
-    private boolean filter = true;
-    private Mesh text;
-    private double[] deltas = new double[120];
-    private int deltaInd = 0;
 
-    public Mote4Example() 
-    {
-        // transformation matrices
-        // a Transform has a model, view, and projection matrix
-        transform3D = new Transform();
-        transform2D = new Transform();
-
-        FontUtils.useMetric("misterpixel");
-        text = FontUtils.createString("1: Windowed\n2: Fullscreen\n3: Toggle vsync\nSpace: Filtering",
-                .025f,.025f,.05f,.05f);
-        
         createKeyCallback();
     }
-    private void createKeyCallback()
+
+    private static void createKeyCallback()
     {
         // this function is called whenever a key is pressed
         glfwSetKeyCallback(Window.getWindowID(), (long window, int key, int scancode, int action, int mods) -> {
-            // GLFW_PRESS, GLFW_REPEAT, GLFW_RELEASE
+            // action is GLFW_PRESS, GLFW_REPEAT, or GLFW_RELEASE
             switch (key) {
                 case GLFW_KEY_SPACE:
                     if (action == GLFW_PRESS)
@@ -101,7 +95,7 @@ public class Mote4Example implements Scene {
                 case GLFW_KEY_1:
                     if (action == GLFW_PRESS) {
                         System.out.println("Set windowed mode.");
-                        Window.setWindowedPercent(.75, 16 / 10.0);
+                        Window.setWindowedPercent(.75, 16/9.0);
                     }
                     break;
                 case GLFW_KEY_2:
@@ -120,15 +114,38 @@ public class Mote4Example implements Scene {
         });
     }
 
+    private static boolean filter = true;
+
+    /////////////////////////////////////////////
+    
+    private Transform transform3D, transform2D;
+    private Mesh text;
+    private double[] deltas = new double[120];
+    private int deltaInd = 0;
+
+    public Mote4Example() 
+    {
+        // transformation matrices
+        // a Transform has a model, view, and projection matrix
+        transform3D = new Transform();
+        transform2D = new Transform();
+
+        // a mesh that is not stored in the global list
+        FontUtils.useMetric("misterpixel");
+        text = FontUtils.createString("1: Windowed\n2: Fullscreen\n3: Toggle vsync\nSpace: Filtering",
+                .025f,.025f,.05f,.05f);
+    }
+
     @Override
     public void update(double time, double delta)
     {
-        // rotate the camera view based on total runtime
-        transform3D.view.setIdentity();
+        // rotate the camera view based on time
+        transform3D.view.setIdentity(); // reset transforms
         transform3D.view.translate(0, 0, -3); // pull the camera back from the origin
-        transform3D.view.rotate((float)time*.5f,   1, 0, 0); // around x axis
-        transform3D.view.rotate((float)time*.5f*2, 0, 1, 0); // around y axis
+        transform3D.view.rotate((float)time/2,   1, 0, 0); // around x axis
+        transform3D.view.rotate((float)time, 0, 1, 0); // around y axis
 
+        // framerate graph logic
         deltas[deltaInd] = delta;
         deltaInd++;
         deltaInd %= deltas.length;
@@ -143,24 +160,24 @@ public class Mote4Example implements Scene {
         // render the cube
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
-        transform3D.makeCurrent(); // Transform will bind to the CURRENT shader
+        transform3D.bind(); // transform will bind to the CURRENT shader only
         if (filter)
-            TextureMap.bindFiltered("test");
+            TextureMap.bindFiltered("test_tex");
         else
-            TextureMap.bindUnfiltered("test");
-        MeshMap.render("cube");
+            TextureMap.bindUnfiltered("test_tex");
+        MeshMap.render("test_model");
 
         // render the framerate graph
-        // only the model matrix is applied to this shader
+        // only the model matrix is bound to this shader
         ShaderMap.use("color");
         for (int i = 0; i < deltas.length; i++)
         {
             float f = (float)deltas[i]*60;
-            Uniform.varFloat("color",f-1,2-f,0,1);
+            Uniform.vec("color",f-1,2-f,0,1);
             transform3D.model.translate(-0.9925f+(float)i/deltas.length*2,-1,0);
             transform3D.model.scale(.005f,f/8,1);
-            transform3D.model.makeCurrent();
-            transform3D.model.setIdentity();
+            transform3D.model.bind();
+            transform3D.model.setIdentity(); // the matrix is reset, but not bound to the shader until bind()
             MeshMap.render("quad");
         }
 
@@ -168,7 +185,7 @@ public class Mote4Example implements Scene {
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
         TextureMap.bindUnfiltered("font");
-        transform2D.makeCurrent();
+        transform2D.bind();
         text.render();
     }
 
@@ -185,8 +202,10 @@ public class Mote4Example implements Scene {
     }
 
     @Override
-    public void destroy() {
+    public void destroy()
+    {
         // called when the game loop exits
+        text.destroy();
     }
     
 }

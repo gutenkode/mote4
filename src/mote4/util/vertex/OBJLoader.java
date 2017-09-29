@@ -1,20 +1,20 @@
 package mote4.util.vertex;
 
-/*
-* Modified on August 8, 2005
-*/
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import mote4.util.ErrorUtils;
 import org.lwjgl.opengl.GL11;
 import mote4.util.vertex.builder.MeshBuilder;
 import mote4.util.vertex.mesh.VAO;
 
 /**
+ * !!!! Modified for this engine to support vertex buffer objects and vertex array objects.
+ *
+ *
+ *
  * @author Jeremy Adams (elias4444)
- * Modified for this engine to support vertex buffer objects and vertex array objects.
  *
  * Use these lines if reading from a file
  * FileReader fr = new FileReader(ref);

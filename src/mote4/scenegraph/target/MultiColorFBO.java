@@ -3,13 +3,15 @@ package mote4.scenegraph.target;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 
-import mote4.util.FBOUtils;
+import mote4.util.ErrorUtils;
 import mote4.util.texture.Texture;
 import mote4.util.texture.TextureMap;
 import org.lwjgl.BufferUtils;
-import static org.lwjgl.opengl.ARBFramebufferObject.*;
 import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL30.*;
+
 import org.lwjgl.opengl.GL20;
 
 /**
@@ -55,7 +57,7 @@ public class MultiColorFBO  extends Target {
         height = h;
         int numAttachments = buffers.length;
         
-        // create the list of attachments to bind when makeCurrent() is called
+        // create the list of attachments to bind when bind() is called
         drawBuffers = BufferUtils.createIntBuffer(numAttachments);
         for (int i = 0; i < numAttachments; i++)
             drawBuffers.put(GL_COLOR_ATTACHMENT0+i);
@@ -77,6 +79,8 @@ public class MultiColorFBO  extends Target {
 
             // bind the texture
             glBindTexture(GL_TEXTURE_2D, colorTextureID[i]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
             // create the texture data
             if (buffers[i] == -1) // only if this is a new buffer
@@ -128,7 +132,7 @@ public class MultiColorFBO  extends Target {
         }
         
         // make sure nothing screwy happened
-        FBOUtils.checkCompleteness(bufferIndex);
+        ErrorUtils.checkFBOCompleteness(bufferIndex);
     }
     
     /**

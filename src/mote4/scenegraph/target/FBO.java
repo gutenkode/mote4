@@ -1,8 +1,10 @@
 package mote4.scenegraph.target;
 
-import static org.lwjgl.opengl.ARBFramebufferObject.*;
 import static org.lwjgl.opengl.GL11.*;
-import mote4.util.FBOUtils;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL30.*;
+
+import mote4.util.ErrorUtils;
 import mote4.util.texture.Texture;
 import mote4.util.texture.TextureMap;
 
@@ -56,6 +58,8 @@ public class FBO extends Target {
         
         // bind the texture
         glBindTexture(GL_TEXTURE_2D, colorTextureID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         
         // create the texture data
         if (tex == null)
@@ -109,7 +113,7 @@ public class FBO extends Target {
         }
         
         // make sure nothing screwy happened
-        FBOUtils.checkCompleteness(bufferIndex);
+        ErrorUtils.checkFBOCompleteness(bufferIndex);
     }
     
     /**
@@ -130,6 +134,8 @@ public class FBO extends Target {
     public void changeTexture(Texture t) {
         glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
         glBindTexture(GL_TEXTURE_2D, t.ID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         // attach the texture to the framebuffer
         glFramebufferTexture2D(GL_FRAMEBUFFER,       // must be GL_FRAMEBUFFER
                                GL_COLOR_ATTACHMENT0, // color attatchment point
