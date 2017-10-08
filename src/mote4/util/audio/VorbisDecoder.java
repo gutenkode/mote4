@@ -59,7 +59,8 @@ public class VorbisDecoder {
         }
 
         try (STBVorbisInfo info = STBVorbisInfo.malloc()) {
-            VorbisDecoder.printInfo(handle, info);
+            stb_vorbis_get_info(handle, info);
+            //VorbisDecoder.printInfo(handle, info);
             this.channels = info.channels();
             this.sampleRate = info.sample_rate();
         }
@@ -80,7 +81,7 @@ public class VorbisDecoder {
 
         System.out.println();
 
-        stb_vorbis_get_info(decoder, info);
+        //stb_vorbis_get_info(decoder, info);
 
         System.out.println("channels = " + info.channels());
         System.out.println("sampleRate = " + info.sample_rate());

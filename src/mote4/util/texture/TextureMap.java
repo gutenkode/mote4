@@ -19,18 +19,9 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
  * @author Peter
  */
 public class TextureMap {
-    
-    private static int bytesPerPixel = 4; // 3 for RGB, 4 for RGBA
-    
+
     protected static HashMap<String,Texture> textureMap = new HashMap<>();
     
-    /**
-     * Adds a texture handle to the map.
-     * The type of texture can be specified.
-     * @param id Must be value from unique call to glGenTextures().
-     * @param type GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, etc.
-     * @param name
-     */
     public static void add(int id, int type, String name) {
         if (textureMap.containsKey(name)) {
             System.err.println("The texture '"+name+"' is already in the texture map.");
@@ -38,12 +29,6 @@ public class TextureMap {
         }
         textureMap.put(name, new Texture(id, type));
     }
-    
-    /**
-     * Adds a texture handle to the map.
-     * @param id Must be value from unique call to glGenTextures().
-     * @param name 
-     */
     public static void add(int id, String name) {
         if (textureMap.containsKey(name)) {
             System.err.println("The texture '"+name+"' is already in the texture map.");
@@ -51,9 +36,16 @@ public class TextureMap {
         }
         textureMap.put(name, new Texture(id, GL_TEXTURE_2D));
     }
-    
+    public static void add(Texture t, String name) {
+        if (textureMap.containsKey(name)) {
+            System.err.println("The texture '"+name+"' is already in the texture map.");
+            return;
+        }
+        textureMap.put(name, t);
+    }
+
     /**
-     * Loads the .png file as a texture.
+     * Loads a .png file as a texture.
      * @param name The relative path to the file in the /res/textures/ directory, and what to recall the texture with when loaded into the hashmap.
      * @return The texture.
      */
@@ -61,91 +53,33 @@ public class TextureMap {
         return load(name, name);
     }
     /**
-     * Loads the .png file as a texture.
+     * Loads a .png file as a texture.
      * @param filepath The relative path to the file in the /res/textures/ directory.
      * @param name What to recall the texture with when loaded into the hashmap.
      * @return The texture.
      */
     public static Texture load(String filepath, String name) {
-        if (textureMap.containsKey(name)) {
-            System.err.println("The texture '"+name+"' has already been loaded.");
-            return textureMap.get(name);
-        }
-        try {
-            BufferedImage image = ImageIO.read(ClassLoader.class.getClass().getResourceAsStream("/res/textures/"+filepath+".png"));
-            return load(image, name);
-        } catch (IOException | IllegalArgumentException e) {
-            System.err.println("Could not read image: /res/textures/"+filepath+".png");
-            e.printStackTrace();
-            Window.destroy();
-            return null;
-        }
-    }
-    /**
-     * Loads the BufferedImage as a texture.
-     * @param image The buffered image to load as an OpenGL texture.
-     * @param name What to recall the texture with when loaded into the hashmap.
-     * @return The texture.
-     */
-    private static Texture load(BufferedImage image, String name) {
-        int[] pixels = new int[image.getWidth() * image.getHeight()];
-        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        
-        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * bytesPerPixel);
-        
-        if (bytesPerPixel == 4)
-            // RGBA
-            for(int y = 0; y < image.getHeight(); y++) {
-                for(int x = 0; x < image.getWidth(); x++) {
-                    int pixel = pixels[y * image.getWidth() + x];
-                    buffer.put((byte) ((pixel >> 16) & 0xFF));      // Red component
-                    buffer.put((byte) ((pixel >> 8)  & 0xFF));      // Green component
-                    buffer.put((byte) ( pixel        & 0xFF));      // Blue component
-                    buffer.put((byte) ((pixel >> 24) & 0xFF));      // Alpha component
-                }
-            }
-        else
-            // RGB
-            for(int y = 0; y < image.getHeight(); y++){
-                for(int x = 0; x < image.getWidth(); x++){
-                    int pixel = pixels[y * image.getWidth() + x];
-                    buffer.put((byte) ((pixel >> 16) & 0xFF));      // Red component
-                    buffer.put((byte) ((pixel >> 8)  & 0xFF));      // Green component
-                    buffer.put((byte) ( pixel        & 0xFF));      // Blue component
-                }
-            }
-        
-        buffer.flip(); // FOR THE LOVE OF GOD DO NOT FORGET THIS
-        
-        // 'buffer' is now the raw color data of the image.
-        
-        int textureID = glGenTextures(); // Generate texture ID
-        glBindTexture(GL_TEXTURE_2D, textureID); // Bind texture ID
-        
-        // set wrap mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR/*_MIPMAP_LINEAR*/);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
-        //Send texel data to OpenGL
-        if (bytesPerPixel == 4)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image.getWidth(), image.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-        //glGenerateMipmap(GL_TEXTURE_2D);
-        ErrorUtils.checkGLError();
-        Texture tex = new Texture(textureID, GL_TEXTURE_2D);
-        textureMap.put(name, tex);
+        Texture tex = ImageUtil.loadImage2D("/res/textures/"+filepath+".png");
+        add(tex, name);
         return tex;
     }
+    /**
+     * Load a texture as a cubemap.
+     * @param filepath
+     * @param name
+     * @return
+     */
+    public static Texture loadCubemap(String filepath, String name) {
+        Texture tex = ImageUtil.loadImageCubemap("/res/textures/"+filepath+".png");
+        add(tex, name);
+        return tex;
+    }
+
     /**
      * Load all textures specified in an index file.
      * The index file must be in the res/textures directory.
      */
     public static void loadIndex(String filename) {
-        //System.out.println("Parsing texture index file...");
         BufferedReader br = FileIO.getBufferedReader("/res/textures/"+filename);
         String in;
         try {
@@ -153,13 +87,19 @@ public class TextureMap {
                 if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;
                 String[] keys = in.split("\t+");
-                if (keys.length == 2) {
-                    for (int i = 0; i < keys.length; i++)
-                        keys[i] = keys[i].trim();
-                    //System.out.println(keys[0] + ", " + keys[1]);
-                    load(keys[0],keys[1]);
-                } else
-                    System.out.println("Invalid texture index line: "+in);
+                try {
+                    if (keys.length == 2) {
+                        // load the texture
+                        for (int i = 0; i < keys.length; i++)
+                            keys[i] = keys[i].trim();
+                        load(keys[0], keys[1]);
+                    } else
+                        System.out.println("Invalid texture index line: " + in);
+                } catch (Exception e) {
+                    System.err.println("Error creating texture: '"+keys[0]+", "+keys[1]+"'");
+                    e.printStackTrace();
+                    Window.destroy();
+                }
             }
         } catch (IOException e) {
             System.err.println("Error reading texture index file.");
@@ -167,20 +107,7 @@ public class TextureMap {
             Window.destroy();
         }
     }
-    
-    /**
-     * Returns the OpenGL texture ID handle for the specified texture.
-     * @param name The texture to retrieve the ID of.
-     * @return The texture ID.
-     */
-    public static int getID(String name) {
-        return textureMap.get(name).ID;
-    }
-    /**
-     * Returns the Texture object for the specified texture.
-     * @param name The texture to retrieve the ID of.
-     * @return The texture ID.
-     */
+
     public static Texture get(String name) {
         return textureMap.get(name);
     }
@@ -237,18 +164,5 @@ public class TextureMap {
             t.destroy();
         }
         textureMap.clear();
-    }
-    
-    /**
-     * Sets the number of bytes to be used for each pixel in a texture.
-     * 3 bytes is RGB, 4 bytes is RGBA
-     * No other number will be used.
-     * @param bytes 3 or 4 bytes
-     */
-    public static void setBytesPerPixel(int bytes) {
-        if (bytes == 3 || bytes == 4)
-            bytesPerPixel = bytes;
-        else
-            throw new IllegalArgumentException("Invalid bytesPerPixel: "+bytes);
     }
 }

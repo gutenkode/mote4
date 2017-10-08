@@ -284,9 +284,8 @@ public class Window {
         } catch (Exception e) {
             System.err.println("Uncaught exception in game loop:");
             e.printStackTrace();
-        } finally {
-            destroy();
         }
+        destroy();
     }
     /**
      * Shuts down GLFW and all resources used in the engine.
@@ -313,10 +312,8 @@ public class Window {
             System.err.println("An error occurred while shutting down:");
             e.printStackTrace();
             System.exit(1);
-        } finally {
-            System.out.println("Terminated normally.");
-            System.exit(0);
         }
+        System.exit(0);
     }
 
     /**

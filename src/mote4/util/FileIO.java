@@ -1,14 +1,14 @@
 package mote4.util;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import com.google.common.io.ByteStreams;
 import mote4.scenegraph.Window;
 import org.lwjgl.BufferUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 
 /**
  * File reading utilities.

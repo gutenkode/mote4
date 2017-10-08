@@ -27,7 +27,8 @@ public abstract class Target {
      * Makes this Target the current rendering framebuffer.
      */
     public void makeCurrent() {
-        current.endCurrent();
+        if (current != null)
+            current.endCurrent();
         current = this;
         glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
         GL11.glViewport(0, 0, width, height);

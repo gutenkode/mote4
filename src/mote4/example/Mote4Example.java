@@ -21,7 +21,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Mote4Example implements Scene {
 
-    public static void main(String[] args) 
+    public static void main(String[] args)
     {
         /*
          * Basic flow of a project in this engine:
@@ -34,7 +34,6 @@ public class Mote4Example implements Scene {
          */
 
         ErrorUtils.debug(true);
-        System.setProperty("java.awt.headless", "true"); // prevents ImageIO from hanging on OS X (a bug)
         // default windowed resolution, window can be freely resized by default
         Window.initWindowedPercent(.75, 16.0/9.0);
         //Window.initFullscreen();
@@ -63,8 +62,8 @@ public class Mote4Example implements Scene {
         ShaderUtils.addProgram("mote/texture.vert", "mote/texture.frag", "texture");
         ShaderUtils.addProgram("mote/color.vert", "mote/color.frag", "color");
         // first argument is the filename, second argument is texture's handle
-        TextureMap.load("mote/crate", "test_tex");
-        TextureMap.load("mote/font/misterpixel", "font");
+        TextureMap.load("mote/crate", "test_tex").filter(true);
+        TextureMap.load("mote/font/misterpixel", "font").filter(false);
         // character width metrics for a font
         FontUtils.loadMetric("mote/font/misterpixel_metric","misterpixel");
         
@@ -84,10 +83,10 @@ public class Mote4Example implements Scene {
             // action is GLFW_PRESS, GLFW_REPEAT, or GLFW_RELEASE
             switch (key) {
                 case GLFW_KEY_SPACE:
-                    if (action == GLFW_PRESS)
-                        filter = false;
-                    else if (action == GLFW_RELEASE)
-                        filter = true;
+                    if (action == GLFW_PRESS) {
+                        filter = !filter;
+                        TextureMap.get("test_tex").filter(filter);
+                    }
                     break;
                 case GLFW_KEY_ESCAPE:
                     Window.destroy();
@@ -161,10 +160,11 @@ public class Mote4Example implements Scene {
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
         transform3D.bind(); // transform will bind to the CURRENT shader only
-        if (filter)
+        /*if (filter)
             TextureMap.bindFiltered("test_tex");
         else
-            TextureMap.bindUnfiltered("test_tex");
+            TextureMap.bindUnfiltered("test_tex");*/
+        TextureMap.bind("test_tex");
         MeshMap.render("test_model");
 
         // render the framerate graph
@@ -184,7 +184,7 @@ public class Mote4Example implements Scene {
         // render text
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
-        TextureMap.bindUnfiltered("font");
+        TextureMap.bind("font");
         transform2D.bind();
         text.render();
     }
