@@ -38,8 +38,8 @@ public class ImageUtil {
             IntBuffer h    = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
 
-            if (!stbi_info_from_memory(rawImage, w, h, comp))
-                throw new RuntimeException("Failed to read image information: " + stbi_failure_reason());
+            //if (!stbi_info_from_memory(rawImage, w, h, comp))
+            //    throw new RuntimeException("Failed to read image information: " + stbi_failure_reason());
             /*
             System.out.println("Image width: " + w.get(0));
             System.out.println("Image height: " + h.get(0));

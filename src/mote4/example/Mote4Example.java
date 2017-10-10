@@ -160,15 +160,12 @@ public class Mote4Example implements Scene {
         glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
         transform3D.bind(); // transform will bind to the CURRENT shader only
-        /*if (filter)
-            TextureMap.bindFiltered("test_tex");
-        else
-            TextureMap.bindUnfiltered("test_tex");*/
         TextureMap.bind("test_tex");
         MeshMap.render("test_model");
 
         // render the framerate graph
         // only the model matrix is bound to this shader
+        glDisable(GL_DEPTH_TEST);
         ShaderMap.use("color");
         for (int i = 0; i < deltas.length; i++)
         {
@@ -182,7 +179,6 @@ public class Mote4Example implements Scene {
         }
 
         // render text
-        glEnable(GL_DEPTH_TEST);
         ShaderMap.use("texture");
         TextureMap.bind("font");
         transform2D.bind();
