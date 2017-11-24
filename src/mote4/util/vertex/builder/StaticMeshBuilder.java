@@ -230,6 +230,10 @@ public class StaticMeshBuilder {
                      0, null,
                      new float[] {0,0,1, 0,0,1, 0,0,1, 0,0,1});
     }
+
+    public static Mesh loadCubeMesh() {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Load a .obj file as a renderable mesh.
