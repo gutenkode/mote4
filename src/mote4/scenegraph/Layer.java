@@ -1,6 +1,8 @@
 package mote4.scenegraph;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import mote4.scenegraph.target.Target;
 
 /**
@@ -12,7 +14,7 @@ import mote4.scenegraph.target.Target;
 public class Layer {
     
     protected Target target;
-    protected ArrayList<Scene> scenes;
+    protected List<Scene> scenes;
     
     public Layer(Target t) {
         target = t;
