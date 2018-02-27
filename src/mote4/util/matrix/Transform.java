@@ -9,24 +9,40 @@ import org.joml.Vector4f;
  * @author Peter
  */
 public class Transform implements Bindable {
-    public ProjectionMatrix projection;
-    public ViewMatrix view;
-    public ModelMatrix model;
+
+    private static Transform currentTransform;
+
+    public static void rebindCurrentTransform() {
+        if (currentTransform != null)
+            currentTransform.bind();
+    }
+
+    //////////////////
+
+    public TransformationMatrix projection,view,model;
+    private boolean enableSetCurrent = false;
     
     public Transform() {
-        projection = new ProjectionMatrix();
-        view = new ViewMatrix();
-        model = new ModelMatrix();
+        this(false);
+    }
+    public Transform(boolean e) {
+        enableSetCurrent = e;
+        projection = new TransformationMatrix("projectionMatrix");
+        view = new TransformationMatrix("viewMatrix");
+        model = new TransformationMatrix("modelMatrix");
     }
 
     @Override
     public void bind() {
+        if (enableSetCurrent)
+            currentTransform = this;
         projection.bind();
         view.bind();
         model.bind();
     }
 
     /**
+     * TODO this currently DOES NOT WORK!
      * Calculates the 2D screen location of a 3D point when passed through this Transform.
      * Useful for creating 2D UI elements that hover over 3D objects.
      * @return
@@ -41,5 +57,15 @@ public class Transform implements Bindable {
         //vec = vec.mul(projection.matrix).mul(view.matrix).mul(model.matrix);
         return new float[] {vec.x, vec.y, vec.z};
         //return new float[] {.5f,.5f};
+    }
+
+    /**
+     * Sets the view matrix to an orthographic view, making walls and floors appear like 2D tiles.
+     * Does not reset to identity first.
+     */
+    public void setOrthoView() {
+        view.rotate((float)Math.PI/4, 1,0,0);
+        float sqrt2 = (float)Math.sqrt(2);
+        view.scale(1, sqrt2, sqrt2);
     }
 }

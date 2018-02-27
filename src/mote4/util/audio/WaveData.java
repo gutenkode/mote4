@@ -31,22 +31,21 @@
  */
 package mote4.util.audio;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
+import mote4.util.FileIO;
+import org.lwjgl.openal.AL10;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 
-import org.lwjgl.openal.AL10;
-
-import com.sun.media.sound.WaveFileReader;
+//import com.sun.media.sound.WaveFileReader;
 
 /**
  *
@@ -91,7 +90,7 @@ public class WaveData {
 	 * 
 	 * @param path URL to file 
 	 * @return WaveData containing data, or null if a failure occured
-	 */
+	 * /
 	public static WaveData create(URL path) {
 		try {
 			// due to an issue with AudioSystem.getAudioInputStream
@@ -103,7 +102,7 @@ public class WaveData {
 			System.out.println("Unable to create from: " + path + ", " + e.getMessage());
 			return null;
 		}		
-	}
+	}*/
 	
 	/**
 	 * Creates a WaveData container from the specified in the classpath
@@ -112,7 +111,8 @@ public class WaveData {
 	 * @return WaveData containing data, or null if a failure occured
 	 */
 	public static WaveData create(String path) {
-		return create(Thread.currentThread().getContextClassLoader().getResource(path));
+		return create(FileIO.getInputStream(path));
+		//return create(Thread.currentThread().getContextClassLoader().getResource(path));
 	}
 	
 	/**

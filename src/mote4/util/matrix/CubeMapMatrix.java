@@ -22,29 +22,24 @@ public class CubeMapMatrix implements Bindable {
         matrix = new Matrix4f[6];
         for (int i = 0; i < 6; i++) {
             matrix[i] = new Matrix4f();
-            setPerspective(matrix[i], 1,1, near,far, 90f);
+            //matrix[i].setPerspective(90f,1,near,far);
+            setPerspective(matrix[i], near,far);
         }
         // right, left
-        matrix[0].rotate( (float)Math.PI/2, new Vector3f(0,1,0));
-        matrix[1].rotate(-(float)Math.PI/2, new Vector3f(0,1,0));
+        matrix[0].rotate( (float)Math.PI/2, 0,1,0);
+        matrix[1].rotate(-(float)Math.PI/2, 0,1,0);
         // top, bottom
-        matrix[2].rotate( (float)Math.PI/2,new Vector3f(1,0,0));
-        matrix[3].rotate(-(float)Math.PI/2,new Vector3f(1,0,0));
+        matrix[2].rotate( (float)Math.PI/2,1,0,0);
+        matrix[3].rotate(-(float)Math.PI/2,1,0,0);
         // near, far
-        matrix[5].rotate((float)Math.PI,new Vector3f(0,1,0));
+        //matrix[4].rotate(0,0,1,0); // already in position
+        matrix[5].rotate((float)Math.PI,0,1,0);
     }
-    /**
-     * Creates a perspective projection.
-     * Width and height are used when finding the aspect ratio, passing 16:9 or 16:10 will function the same.
-     * @param width Width of the display.
-     * @param height Height of the display.
-     * @param near Near clipping plane distance, must be greater than 0.
-     * @param far Far clipping plane distance.
-     * @param fieldOfView The field of view, recommended to be 60.
-     */
-    private void setPerspective(Matrix4f mat, float width, float height, float near, float far, float fieldOfView) {
-        float aspectRatio = width/height;
-        
+
+    private void setPerspective(Matrix4f mat, float near, float far) {
+        float fieldOfView = 90f;
+        float aspectRatio = 1;
+
         float y_scale = 1/(float)Math.tan(Math.toRadians(fieldOfView / 2f));
         float x_scale = y_scale / aspectRatio;
         float frustum_length = far - near;
@@ -71,6 +66,6 @@ public class CubeMapMatrix implements Bindable {
 
     public void translate(float x, float y, float z) {
         for (Matrix4f mat : matrix)
-            mat.translate(new Vector3f(x,y,z));
+            mat.translate(x,y,z);
     }
 }

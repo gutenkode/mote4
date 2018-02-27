@@ -4,42 +4,52 @@ import com.google.common.io.ByteStreams;
 import mote4.scenegraph.Window;
 import org.lwjgl.BufferUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 
 /**
  * File reading utilities.
  * @author Peter
  */
 public class FileIO {
+
+    private static Module currentModule;
+    //private static ClassLoader currentClassLoader;
+    static {
+        currentModule = FileIO.class.getModule();
+        //currentClassLoader = FileIO.class.getClassLoader();
+    }
+
+    /**
+     * Returns an InputStream for a given filepath.
+     * This method is called for every resource, the other methods in this class are convenience wrappers.
+     * @param filepath
+     * @return
+     */
+    public static InputStream getInputStream(String filepath) {
+        try {
+            //System.out.println("Loading '"+filepath+"' from '"+currentModule+"'...");
+            InputStream is = new BufferedInputStream(currentModule.getResourceAsStream(filepath));
+            if (is == null) {
+                throw new IllegalArgumentException("Could not open '" + filepath + "': InputStream is null");
+            }
+            return is;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("IOException while opening '" + filepath + "': "+e.getMessage());
+        }
+    }
+
     /**
      * Returns a BufferedReader for a given file.
      * To read resource files, the path should begin with "/res/..."
      * @param filepath
      * @return
-     * @throws NullPointerException 
      */
     public static BufferedReader getBufferedReader(String filepath) {
-        try {
-            return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Window.destroy();
-            return null;
-        }
+        return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
     }
 
-    /**
-     * Returns an InputStream for a given filepath.
-     * @param filepath
-     * @return 
-     */
-    public static InputStream getInputStream(String filepath) {
-        return ClassLoader.class.getResourceAsStream(filepath);
-    }
 
     public static ByteBuffer getByteBuffer(String filepath) {
         byte[] file = getByteArray(filepath);
@@ -83,5 +93,9 @@ public class FileIO {
             Window.destroy();
             return null;
         }
+    }
+
+    public static void setResourceModule(Module m) {
+        currentModule = m;
     }
 }

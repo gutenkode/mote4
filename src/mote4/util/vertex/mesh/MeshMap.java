@@ -20,6 +20,9 @@ public class MeshMap {
     public static void render(String name) {
         map.get(name).render();
     }
+    public static boolean contains(String name) {
+        return map.containsKey(name);
+    }
 
     public static void delete(String name) {
         if (map.containsKey(name)) {

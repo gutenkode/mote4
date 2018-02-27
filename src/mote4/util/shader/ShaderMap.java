@@ -49,15 +49,6 @@ public class ShaderMap {
     }
     
     /**
-     * Switches to fixed-function pipeline rendering.
-     */
-    public static void useFixedFunction() {
-        GL20.glUseProgram(0);
-        currentProgram = 0;
-        currentName = null;
-    }
-    
-    /**
      * Returns the ID of the current program, as set in this class.
      * @return The ID of the program.
      */

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import mote4.scenegraph.Window;
+import mote4.util.FileIO;
 import mote4.util.vertex.mesh.Mesh;
 import org.lwjgl.opengl.GL11;
 import mote4.util.vertex.builder.StaticMeshBuilder;
@@ -252,6 +253,7 @@ public class FontUtils {
      * @return 
      */
     public static float getStringWidth(String text) {
+        float maxWidth = 0;
         float width = 0;
         for (int j = 0; j < text.length(); j++) {
             char c = text.charAt(j);
@@ -261,10 +263,17 @@ public class FontUtils {
                 // this is a color value
                 int end = text.indexOf('}', j+2);
                 j = end;
-            } else
+            }
+            else if (c == '\n')
+            {
+                // handle newlines, only return the greatest single line length
+                maxWidth = Math.max(maxWidth, width);
+                width = 0;
+            }
+            else
                 width += letterWidth * (float)metrics[(int)c]/charPixelWidth;
         }
-        return width;
+        return Math.max(maxWidth, width);
     }
     
     public static float lineSpace() { return lineSpace; }
@@ -283,26 +292,10 @@ public class FontUtils {
      * @param name Name to use when binding this metric.
      */
     public static void loadMetric(String file, String name) {
-        try {
-            InputStream st = ClassLoader.class.getClass().getResourceAsStream("/res/textures/"+file+".dat");
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
-            byte[] data = new byte[256];
-
-            while ((nRead = st.read(data, 0, data.length)) != -1) {
-              buffer.write(data, 0, nRead);
-            }
-
-            buffer.flush();
-            
-            metrics = buffer.toByteArray();
-            metricMap.put(name, metrics);
-                    
-            //metrics = Files.readAllBytes(new File("./res/textures/"+file+".dat").toPath());
-        } catch(IOException e) {
-            e.printStackTrace();
-            Window.destroy();
-        }
+        metrics = FileIO.getByteArray("/res/textures/" +file+".dat");
+        if (metrics.length != 256)
+            throw new IllegalArgumentException("Metrics file must be 256 bytes long, was "+metrics.length+" bytes.");
+        metricMap.put(name, metrics);
     }
     public static void useMetric(String name) {
         if (!metricMap.containsKey(name))

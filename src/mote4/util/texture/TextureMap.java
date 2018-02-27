@@ -1,17 +1,13 @@
 package mote4.util.texture;
 
-import java.awt.image.BufferedImage;
+import mote4.scenegraph.Window;
+import mote4.util.FileIO;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
-import javax.imageio.ImageIO;
-import mote4.scenegraph.Window;
-import mote4.util.ErrorUtils;
-import mote4.util.FileIO;
-import org.lwjgl.BufferUtils;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 /**
  * Stores, manages, and binds OpenGL texture handles.
@@ -59,7 +55,7 @@ public class TextureMap {
      * @return The texture.
      */
     public static Texture load(String filepath, String name) {
-        Texture tex = ImageUtil.loadImage2D("/res/textures/"+filepath+".png");
+        Texture tex = ImageUtil.loadImage2D("/res/textures/" +filepath+".png");
         add(tex, name);
         return tex;
     }
@@ -70,7 +66,7 @@ public class TextureMap {
      * @return
      */
     public static Texture loadCubemap(String filepath, String name) {
-        Texture tex = ImageUtil.loadImageCubemap("/res/textures/"+filepath+".png");
+        Texture tex = ImageUtil.loadImageCubemap("/res/textures/" +filepath+".png");
         add(tex, name);
         return tex;
     }
@@ -80,7 +76,7 @@ public class TextureMap {
      * The index file must be in the res/textures directory.
      */
     public static void loadIndex(String filename) {
-        BufferedReader br = FileIO.getBufferedReader("/res/textures/"+filename);
+        BufferedReader br = FileIO.getBufferedReader("/res/textures/" +filename);
         String in;
         try {
             while((in = br.readLine()) != null) {

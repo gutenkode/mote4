@@ -3,6 +3,7 @@ package mote4.example;
 import mote4.scenegraph.Scene;
 import mote4.scenegraph.Window;
 import mote4.util.ErrorUtils;
+import mote4.util.FileIO;
 import mote4.util.matrix.Transform;
 import mote4.util.shader.ShaderMap;
 import mote4.util.shader.ShaderUtils;
@@ -26,8 +27,8 @@ public class Mote4Example implements Scene {
         /*
          * Basic flow of a project in this engine:
          * - initialize the context with the Window class
-         * - load resources like shaders and textures
-         * - create one or more Scene objects and add them to Window
+         * - load resources like shaders and textures (best done with index.txt files)
+         * - create one or more Scene objects and add them to Window (Layer can be ignored for most cases)
          * - begin the game loop with Window.loop()
          *
          * Window stores Layers which store Scenes.  Usually you don't need to care about Layers.
@@ -52,7 +53,7 @@ public class Mote4Example implements Scene {
         loadResources();
 
         Window.addScene(new Mote4Example());
-        Window.loop(60); // run the game loop, default 60fps
+        Window.loop(); // run the game loop, default 60fps, 0 or less = no framelimit
     }
 
     private static void loadResources() 
@@ -67,7 +68,7 @@ public class Mote4Example implements Scene {
         // character width metrics for a font
         FontUtils.loadMetric("mote/font/misterpixel_metric","misterpixel");
         
-        // load a .obj file into the game, boolean value is whether the model should be centered
+        // load a .obj file into the game, boolean value is whether the model should be re-centered
         Mesh mesh = StaticMeshBuilder.constructVAOFromOBJ("mote/cube", false);
         MeshMap.add(mesh, "test_model");
         // default quad
@@ -203,5 +204,4 @@ public class Mote4Example implements Scene {
         // called when the game loop exits
         text.destroy();
     }
-    
 }
