@@ -1,3 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: mote4.example.Mote4Example
 

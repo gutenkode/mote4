@@ -3,7 +3,6 @@ package mote4.example;
 import mote4.scenegraph.Scene;
 import mote4.scenegraph.Window;
 import mote4.util.ErrorUtils;
-import mote4.util.FileIO;
 import mote4.util.matrix.Transform;
 import mote4.util.shader.ShaderMap;
 import mote4.util.shader.ShaderUtils;
@@ -13,6 +12,7 @@ import mote4.util.vertex.FontUtils;
 import mote4.util.vertex.builder.StaticMeshBuilder;
 import mote4.util.vertex.mesh.Mesh;
 import mote4.util.vertex.mesh.MeshMap;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 

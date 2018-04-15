@@ -241,8 +241,9 @@ public class Window {
                 deltaTime = (currentTime - lastTime);
                 lastTime = currentTime;
                 if (displayDelta) {
-                    double printDelta = (int) (deltaTime * 1000 * 100) / 100.0;
-                    glfwSetWindowTitle(window, "Delta: " + printDelta);
+                    double displayFps = 1/deltaTime;
+                    double displayDelta = deltaTime*1000;
+                    glfwSetWindowTitle(window,"Delta: "+String.format("%.2f", displayDelta)+"\tFPS: "+String.format("%.1f", displayFps)+"/"+fps);
                 }
 
                 AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
