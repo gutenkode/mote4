@@ -144,6 +144,10 @@ public class FBO extends Target {
                                0);                   // mipmap level
         colorTextureID = t.ID;
     }
+
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
+    public Texture getTexture() { return TextureMap.get(textureName); }
     
     @Override
     public void destroy() {
