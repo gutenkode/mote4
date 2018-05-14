@@ -231,6 +231,20 @@ public class StaticMeshBuilder {
                      new float[] {0,0,1, 0,0,1, 0,0,1, 0,0,1});
     }
 
+    /**
+     * Constructs a basic normalized quad mesh.
+     * The normal mesh goes from -1 to 1, this one goes from 0 to 1.
+     * Includes texture coordinates and normals.
+     * @return
+     */
+    public static Mesh loadQuarterQuadMesh() {
+        return constructVAO(GL11.GL_TRIANGLE_FAN,
+                2, new float[] {0,1, 0,0, 1,0, 1,1},
+                2, new float[] {0,1, 0,0, 1,0, 1,1},
+                0, null,
+                new float[] {0,0,1, 0,0,1, 0,0,1, 0,0,1});
+    }
+
     public static Mesh loadCubeMesh() {
         throw new UnsupportedOperationException();
     }
