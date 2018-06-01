@@ -7,6 +7,8 @@ import org.lwjgl.BufferUtils;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * File reading utilities.
@@ -15,25 +17,21 @@ import java.nio.file.Paths;
 public class FileIO {
 
     private static Module currentModule;
-    //private static ClassLoader currentClassLoader;
     static {
         currentModule = FileIO.class.getModule();
-        //currentClassLoader = FileIO.class.getClassLoader();
     }
 
     /**
      * Returns an InputStream for a given filepath.
-     * This method is called for every resource, the other methods in this class are convenience wrappers.
+     * This method is called by every other method in FileIO.
      * @param filepath
      * @return
      */
     public static InputStream getInputStream(String filepath) {
         try {
-            //System.out.println("Loading '"+filepath+"' from '"+currentModule+"'...");
             InputStream is = new BufferedInputStream(currentModule.getResourceAsStream(filepath));
-            if (is == null) {
+            if (is == null)
                 throw new IllegalArgumentException("Could not open '" + filepath + "': InputStream is null");
-            }
             return is;
         } catch (IOException e) {
             throw new IllegalArgumentException("IOException while opening '" + filepath + "': "+e.getMessage());
@@ -50,7 +48,11 @@ public class FileIO {
         return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
     }
 
-
+    /**
+     * Get the contents of a file as a ByteBuffer.
+     * @param filepath
+     * @return
+     */
     public static ByteBuffer getByteBuffer(String filepath) {
         byte[] file = getByteArray(filepath);
         ByteBuffer buffer = BufferUtils.createByteBuffer(file.length);
@@ -59,6 +61,11 @@ public class FileIO {
         return buffer;
     }
 
+    /**
+     * Get the contents of a file as an array of bytes.
+     * @param filepath
+     * @return
+     */
     public static byte[] getByteArray(String filepath) {
         try {
             return ByteStreams.toByteArray(getInputStream(filepath));
@@ -70,7 +77,8 @@ public class FileIO {
     }
 
     /**
-     * Returns the contents of a file as a String.
+     * Get the contents of a file as a single string.
+     * Line breaks are appended between lines.
      * @param filepath
      * @return 
      */
@@ -95,7 +103,45 @@ public class FileIO {
         }
     }
 
-    public static void setResourceModule(Module m) {
-        currentModule = m;
+    /**
+     * Get the contents of a file as a list of strings.
+     * @param filepath
+     * @return
+     */
+    public static List<String> getStringList(String filepath) {
+        BufferedReader reader = getBufferedReader(filepath);
+        List<String> strings = new ArrayList<>();
+        String line;
+        try {
+            while((line = reader.readLine()) != null)
+                strings.add(line);
+            reader.close();
+            return strings;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return null;
+        }
+    }
+
+    /**
+     * Get the contents of a file as an array of strings.
+     * @param filepath
+     * @return
+     */
+    public static String[] getStringArray(String filepath) {
+        BufferedReader reader = getBufferedReader(filepath);
+        List<String> strings = new ArrayList<>();
+        String line;
+        try {
+            while((line = reader.readLine()) != null)
+                strings.add(line);
+            reader.close();
+            return strings.toArray(new String[strings.size()]);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return null;
+        }
     }
 }
