@@ -51,7 +51,6 @@ public class StaticMeshBuilder {
         
         // bind the vertex array
         glBindVertexArray(vaoId); // "start recording the calls I make.."
-        
         {
             int vertexVboId = glGenBuffers(); // VBO for vertices
             vbos.add(vertexVboId);
@@ -243,10 +242,6 @@ public class StaticMeshBuilder {
                 2, new float[] {0,1, 0,0, 1,0, 1,1},
                 0, null,
                 new float[] {0,0,1, 0,0,1, 0,0,1, 0,0,1});
-    }
-
-    public static Mesh loadCubeMesh() {
-        throw new UnsupportedOperationException();
     }
     
     /**

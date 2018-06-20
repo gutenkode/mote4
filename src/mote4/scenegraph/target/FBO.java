@@ -53,8 +53,10 @@ public class FBO extends Target {
         
         if (tex == null)
             colorTextureID = glGenTextures(); // create a texture
-        else
+        else {
+            textureName = TextureMap.getName(tex);
             colorTextureID = tex.ID;
+        }
         
         // bind the texture
         glBindTexture(GL_TEXTURE_2D, colorTextureID);
@@ -122,6 +124,8 @@ public class FBO extends Target {
      * @return Returns this object, to aid in fast scenegraph construction.
      */
     public FBO addToTextureMap(String name) {
+        if (textureName != null)
+            TextureMap.untrack(textureName);
         TextureMap.add(colorTextureID, name);
         textureName = name;
         return this;
@@ -131,7 +135,9 @@ public class FBO extends Target {
      * Binds a new texture to the framebuffer object.
      * @param t The texture to bind.
      */
-    public void changeTexture(Texture t) {
+    private void changeTexture(Texture t) {
+        textureName = TextureMap.getName(t);
+
         glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
         glBindTexture(GL_TEXTURE_2D, t.ID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -153,9 +159,9 @@ public class FBO extends Target {
     public void destroy() {
         glDeleteRenderbuffers(depthRenderBufferID);
         glDeleteRenderbuffers(stencilRenderBufferID);
-        if (textureName != null)
+        if (textureName != null) {
             TextureMap.delete(textureName);
-        else
+        } else
             glDeleteTextures(colorTextureID);
         glDeleteFramebuffers(bufferIndex);
     }

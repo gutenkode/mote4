@@ -31,6 +31,9 @@ public class ScrollingText implements Mesh {
         index = 0;
         fullStr = text;
         writeStr = "";
+
+        // an empty mesh
+        vao = (VAO)FontUtils.createString("",0,0,0,0);
     }
 
     @Override

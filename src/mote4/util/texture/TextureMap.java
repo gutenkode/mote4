@@ -6,6 +6,7 @@ import mote4.util.FileIO;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
@@ -107,6 +108,14 @@ public class TextureMap {
     public static Texture get(String name) {
         return textureMap.get(name);
     }
+
+    public static String getName(Texture tex) {
+        for (Map.Entry<String, Texture> e : textureMap.entrySet()) {
+            if (e.getValue() == tex)
+                return e.getKey();
+        }
+        return null;
+    }
     
     /**
      * Binds the texture with linear filtering.
@@ -152,6 +161,16 @@ public class TextureMap {
             textureMap.remove(name);
         }
     }
+
+    /**
+     * Removes a Texture from the map without deleting the underlying OpenGL resource.
+     */
+    public static void untrack(String name) {
+        if (textureMap.containsKey(name)) {
+            textureMap.remove(name);
+        }
+    }
+
     /**
      * Removes all textures, and deletes their data from OpenGL.
      */
