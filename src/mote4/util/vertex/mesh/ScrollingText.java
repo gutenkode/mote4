@@ -38,18 +38,27 @@ public class ScrollingText implements Mesh {
         if (destroyed)
             throw new IllegalStateException("Attempted to render destroyed ScrollingText mesh.");
         
-        if (index < fullStr.length()) 
+        update();
+        
+        vao.render();
+    }
+
+    public void update() {
+        if (index < fullStr.length())
         {
             index += Window.delta()*charactersPerSecond;
             index = Math.min(fullStr.length(), index);
             writeStr = fullStr.substring(0, (int)index);
-            
+
             if (vao != null)
                 vao.destroy();
             FontUtils.useMetric(metric);
             vao = (VAO)FontUtils.createString(writeStr, xPos, yPos, xScale, yScale);
         }
-        
+    }
+    public void renderOnly() {
+        if (destroyed)
+            throw new IllegalStateException("Attempted to render destroyed ScrollingText mesh.");
         vao.render();
     }
     
