@@ -6,7 +6,8 @@ import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A transformation matrix is used to set view transformations in a shader.
@@ -17,14 +18,15 @@ public class TransformationMatrix implements Bindable {
     private static FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 
     protected String uniformName;
-    protected Matrix4f matrix, matrix2;
-    protected Stack<Matrix4f> stack;
+    protected Matrix4f matrix;
+    protected List<Matrix4f> stack;
+    protected int stackIndex;
     
     public TransformationMatrix(String name) {
         uniformName = name;
-        stack = new Stack<>();
+        stack = new ArrayList<>();
+        stackIndex = -1;
         matrix = new Matrix4f();
-        matrix2 = new Matrix4f();
         matrix.identity();
     }
     
@@ -107,19 +109,19 @@ public class TransformationMatrix implements Bindable {
      * This saves the current state of the matrix for recalling later.
      */
     public void push() {
-        if (!stack.isEmpty()) {
-            Matrix4f mat = new Matrix4f(matrix); // create a new Matrix4f, and put it on the stack
-            stack.push(mat);
+        stackIndex++;
+        if (stack.size() <= stackIndex) {
+            stack.add(new Matrix4f(matrix));
         } else {
-            matrix2.set(matrix); // most push() operations are not nested, so this can conserve memory
-            stack.push(matrix2);
+            stack.get(stackIndex).set(matrix);
         }
     }
     /**
      * Pop the top matrix off the stack.
      */
     public void pop() {
-        matrix = stack.pop();
+        matrix.set(stack.get(stackIndex));
+        stackIndex--;
     }
 
     @Override
