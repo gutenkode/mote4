@@ -216,12 +216,14 @@ public class Window {
         layers.add(l);
     }
 
-    public static void loop() { loop(targetFps); }
     /**
      * Run the game loop with the current list of Layers and Scenes.
      * @param fps The framerate to run at. Vsync overrides any value.  A value <=0 means unlimited framerate.
      */
     public static void loop(int fps) {
+        targetFps = fps;loop();
+    }
+    public static void loop() {
         glfwSetTime(0); // largely unnecessary
         double lastTime = glfwGetTime();
         glClearColor(0, 0, 0, 0);
@@ -243,7 +245,7 @@ public class Window {
                 if (displayDelta) {
                     double displayFps = 1/deltaTime;
                     double displayDelta = deltaTime*1000;
-                    glfwSetWindowTitle(window,"Delta: "+String.format("%.2f", displayDelta)+"\tFPS: "+String.format("%.1f", displayFps)+"/"+fps);
+                    glfwSetWindowTitle(window,"Delta: "+String.format("%.2f", displayDelta)+"\tFPS: "+String.format("%.1f", displayFps)+"/"+targetFps);
                 }
 
                 AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
@@ -279,7 +281,9 @@ public class Window {
                 glfwPollEvents();
 
                 if (!isFullscreen || !useVsync) // sync manually if vsync is disabled or in windowed mode
-                    sync(fps);
+                    sync(targetFps);
+                else
+                    glfwSwapInterval(1); // TODO this fixes vsync not applying when it is enabled and fullscreen is enabled, but it's called every frame... probably fine?
             }
             System.out.println("Window was closed, terminating...");
         } catch (Exception e) {
@@ -378,6 +382,9 @@ public class Window {
     public static boolean isVsyncEnabled() { return useVsync; }
     public static void setFPS(int fps) {
         targetFps = fps;
+    }
+    public static int getFPS() {
+        return targetFps;
     }
     public static void displayDeltaInTitle(boolean enable) {
         displayDelta = enable;
@@ -481,6 +488,8 @@ public class Window {
         isFullscreen = true;
         if (useVsync)
             glfwSwapInterval(1); // auto-enable vsync, if flag is set
+        else
+            glfwSwapInterval(0);
     }
     public static boolean isFullscreen() { return isFullscreen; }
     
