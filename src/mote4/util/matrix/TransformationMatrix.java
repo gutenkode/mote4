@@ -14,14 +14,17 @@ import java.util.Stack;
  */
 public class TransformationMatrix implements Bindable {
 
+    private static FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+
     protected String uniformName;
-    protected Matrix4f matrix;
+    protected Matrix4f matrix, matrix2;
     protected Stack<Matrix4f> stack;
     
     public TransformationMatrix(String name) {
         uniformName = name;
         stack = new Stack<>();
         matrix = new Matrix4f();
+        matrix2 = new Matrix4f();
         matrix.identity();
     }
     
@@ -104,8 +107,13 @@ public class TransformationMatrix implements Bindable {
      * This saves the current state of the matrix for recalling later.
      */
     public void push() {
-        Matrix4f mat = new Matrix4f(matrix); // create a new Matrix4f, and put it on the stack
-        stack.push(mat);
+        if (!stack.isEmpty()) {
+            Matrix4f mat = new Matrix4f(matrix); // create a new Matrix4f, and put it on the stack
+            stack.push(mat);
+        } else {
+            matrix2.set(matrix); // most push() operations are not nested, so this can conserve memory
+            stack.push(matrix2);
+        }
     }
     /**
      * Pop the top matrix off the stack.
@@ -116,7 +124,7 @@ public class TransformationMatrix implements Bindable {
 
     @Override
     public void bind() {
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+        //FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         matrix.get(buffer);
         Uniform.mat4(uniformName, buffer);
     }
