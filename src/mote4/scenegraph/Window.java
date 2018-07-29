@@ -121,7 +121,7 @@ public class Window {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, RESIZABLE); // set the window resizable state
-        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_TRUE);
+        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // whether the window auto-minimizes on focus loss when fullscreen
         
         // target OpenGL 3.3 core
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
