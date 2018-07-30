@@ -25,6 +25,11 @@ import static org.lwjgl.system.MemoryStack.stackPush;
  */
 public class ImageUtil {
 
+    private static boolean filterByDefault = false, enableMipmap = false;
+
+    public static void filterByDefault(boolean b) { filterByDefault = b; }
+    public static void enableMipmap(boolean b) { enableMipmap = b; }
+
     protected static Texture loadImage2D(String filepath) { return loadImage(filepath, GL_TEXTURE_2D); }
     protected static Texture loadImageCubemap(String filepath) { return loadImage(filepath, GL_TEXTURE_CUBE_MAP); }
     protected static Texture loadImage(String filepath, int texType) {
@@ -55,9 +60,9 @@ public class ImageUtil {
             height = h.get(0);
             components = comp.get(0);
 
-            if (components == 4) // RGBA
-                premultiplyAlpha(image, width, height);
-            return createTexture(image, width, height, components, texType, false, true);
+            //if (components == 4) // RGBA
+            //    premultiplyAlpha(image, width, height);
+            return createTexture(image, width, height, components, texType, false, enableMipmap);
         }
     }
 
