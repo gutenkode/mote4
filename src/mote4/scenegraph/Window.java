@@ -121,8 +121,11 @@ public class Window {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, RESIZABLE); // set the window resizable state
-        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // whether the window auto-minimizes on focus loss when fullscreen
-        
+        if (System.getProperty("os.name").toLowerCase().contains("mac"))
+            glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // mac fullscreen behavior works better with this disabled
+        else
+            glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_TRUE); // whether the window auto-minimizes on focus loss when fullscreen
+
         // target OpenGL 3.3 core
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
