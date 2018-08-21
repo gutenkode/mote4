@@ -1,38 +1,38 @@
 package mote4.util.vertex;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import mote4.util.FileIO;
+import mote4.util.vertex.builder.StaticMeshBuilder;
+import mote4.util.vertex.mesh.Mesh;
+import org.lwjgl.opengl.GL11;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import mote4.scenegraph.Window;
-import mote4.util.FileIO;
-import mote4.util.vertex.mesh.Mesh;
-import org.lwjgl.opengl.GL11;
-import mote4.util.vertex.builder.StaticMeshBuilder;
 
 /**
  *
  * @author Peter
  */
 public class FontUtils {
-    private static final int ROWS = 16, 
+    private static final int ROWS    = 16,
                              COLUMNS = 16;
     private static final float ROW_HEIGHT = 1f/ROWS,
                                COLUMN_WIDTH = 1f/COLUMNS;
-    private static float letterWidth = 1,
-                         letterHeight = 1,
-                         lineSpace = letterHeight*1f;
-    private static int charPixelWidth = 16;
+    private static float letterWidth,
+                         letterHeight,
+                         lineSpace;
+    private static byte charPixelWidth;
     
     private static byte[] metrics;
     private static HashMap<String,byte[]> metricMap = new HashMap<>();
     
     static {
         // default monospaced metric
-        metrics = new byte[256];
-        Arrays.fill(metrics, (byte)charPixelWidth);
+        metrics = new byte[258];
+        charPixelWidth = 16;
+        letterWidth = letterHeight = 1;
+        lineSpace = letterHeight;
+        Arrays.fill(metrics, charPixelWidth);
         metricMap.put("monospace", metrics);
     }
     
@@ -55,73 +55,69 @@ public class FontUtils {
      * @return A vbo containing the string.
      */
     public static Mesh createString(String text, float xPos, float yPos, float xScale, float yScale) {
-        int stride = 6*2; // 6 vertices per letter, 2 coords per vertex
+        int stride = 6*2; // 6 vertices per letter, with 2 coords per vertex
         float[] vertices = new float[text.length()*stride]; 
         float[] texCoords = new float[text.length()*stride];
-        float lineHeight = 0;
-        float width = 0;
-        
-        int i = -1;
-        for (int j = 0; j < text.length(); j++) {
-            i++;
-            char c = text.charAt(j);
+        float yOffset = 0; // incremented every newline
+        float xOffset = 0; // incremented every character, reset every newline
+
+        for (int i = 0; i < text.length(); i++)
+        {
+            char c = text.charAt(i);
             if (c == '\n') 
             {
-                i = -1;
-                lineHeight += lineSpace;
-                width = 0;
+                yOffset += lineSpace;
+                xOffset = 0;
             }
             else 
             {
+                float currentCharWidth = letterWidth * (float)metrics[(int)c%256]/charPixelWidth;
+
+                // add vertex coordinates
+                vertices[i*stride  ] = xPos +xOffset*xScale;
+                vertices[i*stride+1] = yPos +yOffset*yScale;
+
+                vertices[i*stride+2] = xPos +xOffset*xScale;
+                vertices[i*stride+3] = yPos +letterHeight*yScale +yOffset*yScale;
+
+                vertices[i*stride+4] = xPos +(xOffset+currentCharWidth)*xScale;
+                vertices[i*stride+5] = yPos +yOffset*yScale;
+                
+                vertices[i*stride+6] = xPos +xOffset*xScale;
+                vertices[i*stride+7] = yPos +letterHeight*yScale +yOffset*yScale;
+                
+                vertices[i*stride+8] = xPos +(xOffset+currentCharWidth)*xScale;
+                vertices[i*stride+9] = yPos +letterHeight*yScale +yOffset*yScale;
+
+                vertices[i*stride+10] = xPos +(xOffset+currentCharWidth)*xScale;
+                vertices[i*stride+11] = yPos +yOffset*yScale;
+                
+                xOffset += currentCharWidth;
+
                 // texture coords
                 int x = ((int)c)%COLUMNS;
                 int y = ((int)c)/ROWS;
                 float xCoord = x*COLUMN_WIDTH;
                 float yCoord = y*ROW_HEIGHT;
-                
-                //float newWidth = (float)metrics[(int)c]/0x20;
-                float newWidth = (float)metrics[(int)c]/charPixelWidth;
-                newWidth *= letterWidth;
-
-                // add vertex coordinates
-                vertices[j*stride  ] = xPos+width*xScale;
-                vertices[j*stride+1] = yPos+lineHeight*yScale;
-
-                vertices[j*stride+2] = xPos+width*xScale;
-                vertices[j*stride+3] = yPos+letterHeight*yScale+lineHeight*yScale;
-
-                vertices[j*stride+4] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+5] = yPos+lineHeight*yScale;
-                
-                vertices[j*stride+6] = xPos+width*xScale;
-                vertices[j*stride+7] = yPos+letterHeight*yScale+lineHeight*yScale;
-                
-                vertices[j*stride+8] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+9] = yPos+letterHeight*yScale+lineHeight*yScale;
-
-                vertices[j*stride+10] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+11] = yPos+lineHeight*yScale;
-                
-                width += newWidth;
 
                 // add texture coordinates
-                texCoords[j*stride  ] = xCoord;
-                texCoords[j*stride+1] = yCoord;
+                texCoords[i*stride  ] = xCoord;
+                texCoords[i*stride+1] = yCoord;
 
-                texCoords[j*stride+2] = xCoord;
-                texCoords[j*stride+3] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+2] = xCoord;
+                texCoords[i*stride+3] = yCoord+ROW_HEIGHT*letterHeight;
                 
-                texCoords[j*stride+4] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+5] = yCoord;
+                texCoords[i*stride+4] = xCoord+COLUMN_WIDTH*currentCharWidth;
+                texCoords[i*stride+5] = yCoord;
                 
-                texCoords[j*stride+6] = xCoord;
-                texCoords[j*stride+7] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+6] = xCoord;
+                texCoords[i*stride+7] = yCoord+ROW_HEIGHT*letterHeight;
 
-                texCoords[j*stride+8] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+9] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+8] = xCoord+COLUMN_WIDTH*currentCharWidth;
+                texCoords[i*stride+9] = yCoord+ROW_HEIGHT*letterHeight;
 
-                texCoords[j*stride+10] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+11] = yCoord;
+                texCoords[i*stride+10] = xCoord+COLUMN_WIDTH*currentCharWidth;
+                texCoords[i*stride+11] = yCoord;
             }
         }
         
@@ -148,93 +144,88 @@ public class FontUtils {
         float[] colorVal = new float[] {1,1,1,1};
         float[] colors = new float[text.length()*stride*2];
         float[] texCoords = new float[text.length()*stride]; // color has 4 components
-        float lineHeight = 0;
-        float width = 0;
-        
-        int i = -1;
-        for (int j = 0; j < text.length(); j++) {
-            i++;
-            char c = text.charAt(j);
+        float yOffset = 0; // incremented every newline
+        float xOffset = 0; // incremented every character, reset every newline
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
             if (c == '\n') 
             {
-                i = -1;
-                lineHeight += lineSpace;
-                width = 0;
+                yOffset += lineSpace;
+                xOffset = 0;
             }
-            else if (c == '@' && text.charAt(j+1) == '{') 
+            else if (c == '@' && text.charAt(i+1) == '{')
             {
                 // this is a color value, parse the contents
-                int end = text.indexOf('}', j+2);
-                StringTokenizer tok = new StringTokenizer(text.substring(j+2,end),",");
+                int end = text.indexOf('}', i+2);
+                StringTokenizer tok = new StringTokenizer(text.substring(i+2,end),",");
                 int colorInd = 0;
                 while (tok.hasMoreTokens() && colorInd < 4) {
                     try {
                         colorVal[colorInd] = Float.valueOf(tok.nextToken());
                     } catch (NumberFormatException e) {
-                        System.err.println("Invalid text color value: "+text.substring(j+2,end));
+                        System.err.println("Invalid text color value: "+text.substring(i+2,end));
                     }
                     colorInd++;
                 }
-                j = end;
+                i = end;
             }
             else 
             {
+                float newWidth = letterWidth * (float)metrics[(int)c%256]/charPixelWidth;
+
+                // add vertex coordinates
+                vertices[i*stride  ] = xPos+xOffset*xScale;
+                vertices[i*stride+1] = yPos+yOffset*yScale;
+
+                vertices[i*stride+2] = xPos+xOffset*xScale;
+                vertices[i*stride+3] = yPos+letterHeight*yScale+yOffset*yScale;
+
+                vertices[i*stride+4] = xPos+(xOffset+newWidth)*xScale;
+                vertices[i*stride+5] = yPos+yOffset*yScale;
+                
+                vertices[i*stride+6] = xPos+xOffset*xScale;
+                vertices[i*stride+7] = yPos+letterHeight*yScale+yOffset*yScale;
+                
+                vertices[i*stride+8] = xPos+(xOffset+newWidth)*xScale;
+                vertices[i*stride+9] = yPos+letterHeight*yScale+yOffset*yScale;
+
+                vertices[i*stride+10] = xPos+(xOffset+newWidth)*xScale;
+                vertices[i*stride+11] = yPos+yOffset*yScale;
+                
+                xOffset += newWidth;
+
                 // texture coords
                 int x = ((int)c)%COLUMNS;
                 int y = ((int)c)/ROWS;
                 float xCoord = x*COLUMN_WIDTH;
                 float yCoord = y*ROW_HEIGHT;
-                
-                //float newWidth = (float)metrics[(int)c]/0x20;
-                float newWidth = (float)metrics[((int)c)%metrics.length]/charPixelWidth;
-                newWidth *= letterWidth;
-
-                // add vertex coordinates
-                vertices[j*stride  ] = xPos+width*xScale;
-                vertices[j*stride+1] = yPos+lineHeight*yScale;
-
-                vertices[j*stride+2] = xPos+width*xScale;
-                vertices[j*stride+3] = yPos+letterHeight*yScale+lineHeight*yScale;
-
-                vertices[j*stride+4] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+5] = yPos+lineHeight*yScale;
-                
-                vertices[j*stride+6] = xPos+width*xScale;
-                vertices[j*stride+7] = yPos+letterHeight*yScale+lineHeight*yScale;
-                
-                vertices[j*stride+8] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+9] = yPos+letterHeight*yScale+lineHeight*yScale;
-
-                vertices[j*stride+10] = xPos+(width+newWidth)*xScale;
-                vertices[j*stride+11] = yPos+lineHeight*yScale;
-                
-                width += newWidth;
 
                 // add texture coordinates
-                texCoords[j*stride  ] = xCoord;
-                texCoords[j*stride+1] = yCoord;
+                texCoords[i*stride  ] = xCoord;
+                texCoords[i*stride+1] = yCoord;
 
-                texCoords[j*stride+2] = xCoord;
-                texCoords[j*stride+3] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+2] = xCoord;
+                texCoords[i*stride+3] = yCoord+ROW_HEIGHT*letterHeight;
                 
-                texCoords[j*stride+4] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+5] = yCoord;
+                texCoords[i*stride+4] = xCoord+COLUMN_WIDTH*newWidth;
+                texCoords[i*stride+5] = yCoord;
                 
-                texCoords[j*stride+6] = xCoord;
-                texCoords[j*stride+7] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+6] = xCoord;
+                texCoords[i*stride+7] = yCoord+ROW_HEIGHT*letterHeight;
 
-                texCoords[j*stride+8] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+9] = yCoord+ROW_HEIGHT*letterHeight;
+                texCoords[i*stride+8] = xCoord+COLUMN_WIDTH*newWidth;
+                texCoords[i*stride+9] = yCoord+ROW_HEIGHT*letterHeight;
 
-                texCoords[j*stride+10] = xCoord+COLUMN_WIDTH*newWidth;
-                texCoords[j*stride+11] = yCoord;
+                texCoords[i*stride+10] = xCoord+COLUMN_WIDTH*newWidth;
+                texCoords[i*stride+11] = yCoord;
                 
                 // add color values
                 for (int k = 0; k < 6; k++) {
-                    colors[j*stride*2+k*4  ] = colorVal[0];
-                    colors[j*stride*2+k*4+1] = colorVal[1];
-                    colors[j*stride*2+k*4+2] = colorVal[2];
-                    colors[j*stride*2+k*4+3] = colorVal[3];
+                    colors[i*stride*2+k*4  ] = colorVal[0];
+                    colors[i*stride*2+k*4+1] = colorVal[1];
+                    colors[i*stride*2+k*4+2] = colorVal[2];
+                    colors[i*stride*2+k*4+3] = colorVal[3];
                 }
             }
         }
@@ -276,30 +267,25 @@ public class FontUtils {
         return Math.max(maxWidth, width);
     }
     
-    public static float lineSpace() { return lineSpace; }
-    public static float letterWidth() { return letterWidth; }
-    public static float letterHeight() { return letterHeight; }
-    public static int charPixelWidth() { return charPixelWidth; }
-    
-    public static void setLineSpace(float s) { lineSpace = s; }
-    public static void setLetterWidth(float w) { letterWidth = w; }
-    public static void setLetterHeght(float h) { letterHeight = h; }
-    public static void setCharPixelWidth(int w) { charPixelWidth = w; }
-    
     /**
      * Loads a metric file for a font.
      * @param file Filename of the metric data.
      * @param name Name to use when binding this metric.
      */
     public static void loadMetric(String file, String name) {
-        metrics = FileIO.getByteArray("/res/textures/" +file+".dat");
-        if (metrics.length != 256)
-            throw new IllegalArgumentException("Metrics file must be 256 bytes long, was "+metrics.length+" bytes.");
-        metricMap.put(name, metrics);
+        byte[] m = FileIO.getByteArray("/res/textures/" +file+".metric");
+        if (m.length != 258)
+            throw new IllegalArgumentException("Metrics file must be 258 bytes long, was "+m.length+" bytes.");
+        metricMap.put(name, m);
+        useMetric(name);
     }
     public static void useMetric(String name) {
         if (!metricMap.containsKey(name))
             throw new IllegalArgumentException("Font metric '"+name+"' is not loaded.");
         metrics = metricMap.get(name);
+        charPixelWidth = metrics[256]; // directly store the width of characters, in pixels
+        byte charPixelHeight = metrics[257];
+        letterWidth = 1;//(float)charPixelWidth/charPixelHeight; // letterWidth is essentially the aspect ratio of the characters
+        lineSpace = letterHeight = 1;
     }
 }
