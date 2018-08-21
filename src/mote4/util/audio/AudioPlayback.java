@@ -4,6 +4,9 @@ import mote4.scenegraph.Window;
 import mote4.util.ErrorUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.AL10.alGetSourcei;
@@ -15,10 +18,12 @@ public class AudioPlayback {
 
     private static boolean playSfx, playMusic, isMusicPlaying;
     private static String currentMusic;
-    private static ArrayList<Integer> sources;
+    private static List<Integer> sources;
+    private static Map<String, Integer> loopingSfx;
     private static VorbisDecoder musicDecoder;
     static {
         sources = new ArrayList<>();
+        loopingSfx = new HashMap<>();
         currentMusic = "";
         playSfx = playMusic = true;
         isMusicPlaying = false;
@@ -68,6 +73,52 @@ public class AudioPlayback {
         alSourcePlay(source);
 
         ErrorUtils.checkALError();
+    }
+
+    /**
+     * Will play a sfx effect on loop until told to stop.
+     * @param name
+     */
+    public static void loopSfx(String name) {
+        if (!playSfx)
+            return;
+        if (!AudioLoader.bufferMap.containsKey(name))
+            throw new IllegalArgumentException("Could not find wav audio buffer '"+name+"'.");
+
+        if (loopingSfx.containsKey(name))
+            stopLoopingSfx(name);
+
+        int source = createSource();
+        loopingSfx.put(name, source);
+
+        alSourcei(source, AL_BUFFER, AudioLoader.bufferMap.get(name));
+        alSourcei(source, AL_LOOPING, AL_TRUE);
+        alSourcef(source, AL_GAIN, 1f);
+        alSourcef(source, AL_PITCH, 1f);
+        alSourcePlay(source);
+
+        ErrorUtils.checkALError();
+    }
+
+    public static void pauseAllLoopingSfx() {
+        for (int source : loopingSfx.values())
+            alSourcePause(source);
+    }
+    public static void unpauseAllLoopingSfx() {
+        for (int source : loopingSfx.values())
+            alSourcePlay(source);
+    }
+
+    public static void stopLoopingSfx(String name) {
+        int source = loopingSfx.get(name);
+        alSourceStop(source);
+        alDeleteSources(source);
+        loopingSfx.remove(name);
+    }
+
+    public static void setLoopingSfxPitch(String name, float pitch) {
+        int source = loopingSfx.get(name);
+        alSourcef(source, AL_PITCH, pitch);
     }
 
     /**
