@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static java.lang.Math.round;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
@@ -99,6 +101,9 @@ public class ImageUtil {
 
         switch (texType) {
             case GL_TEXTURE_2D:
+                // enable maximum antisotropic filtering
+                float aniso = glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
                 // filtering
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
