@@ -62,8 +62,8 @@ public class ImageUtil {
             height = h.get(0);
             components = comp.get(0);
 
-            if (components == 4) // RGBA
-                premultiplyAlpha(image, width, height);
+            //if (components == 4) // RGBA
+            //    premultiplyAlpha(image, width, height);
             return createTexture(image, width, height, components, texType, filterByDefault, enableMipmap);
         }
     }
