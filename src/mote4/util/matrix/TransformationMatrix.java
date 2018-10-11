@@ -130,4 +130,10 @@ public class TransformationMatrix implements Bindable {
         matrix.get(buffer);
         Uniform.mat4(uniformName, buffer);
     }
+
+    public void bindAs(String name) {
+        //FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+        matrix.get(buffer);
+        Uniform.mat4(name, buffer);
+    }
 }
