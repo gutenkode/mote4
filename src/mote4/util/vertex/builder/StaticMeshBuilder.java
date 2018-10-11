@@ -1,8 +1,10 @@
 package mote4.util.vertex.builder;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import mote4.scenegraph.Window;
 import mote4.util.ErrorUtils;
 import mote4.util.FileIO;
 import mote4.util.vertex.OBJLoader;
@@ -251,8 +253,14 @@ public class StaticMeshBuilder {
      * @return 
      */
     public static VAO constructVAOFromOBJ(String filename, boolean center) {
-        OBJLoader obj = new OBJLoader(FileIO.getBufferedReader("/res/models/"+filename+".obj"), center);
-        VAO vao = obj.createVAO();
-        return vao;
+        try {
+            OBJLoader obj = new OBJLoader(FileIO.getBufferedReader("/res/models/" + filename + ".obj"), center);
+            VAO vao = obj.createVAO();
+            return vao;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return null;
+        }
     }
 }

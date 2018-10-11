@@ -27,15 +27,11 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static InputStream getInputStream(String filepath) {
-        try {
-            InputStream is = new BufferedInputStream(currentModule.getResourceAsStream(filepath));
-            if (is == null)
-                throw new IllegalArgumentException("Could not open '" + filepath + "': InputStream is null");
-            return is;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("IOException while opening '" + filepath + "': "+e.getMessage());
-        }
+    public static InputStream getInputStream(String filepath) throws IOException {
+        InputStream is = new BufferedInputStream(currentModule.getResourceAsStream(filepath));
+        if (is == null)
+            throw new IllegalArgumentException("Could not open '" + filepath + "': InputStream is null");
+        return is;
     }
 
     /**
@@ -44,7 +40,7 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static BufferedReader getBufferedReader(String filepath) {
+    public static BufferedReader getBufferedReader(String filepath) throws IOException {
         return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
     }
 
@@ -53,7 +49,7 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static ByteBuffer getByteBuffer(String filepath) {
+    public static ByteBuffer getByteBuffer(String filepath) throws IOException {
         byte[] file = getByteArray(filepath);
         ByteBuffer buffer = BufferUtils.createByteBuffer(file.length);
         buffer.put(file);
@@ -66,14 +62,8 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static byte[] getByteArray(String filepath) {
-        try {
-            return ByteStreams.toByteArray(getInputStream(filepath));
-        } catch (IOException e) {
-            e.printStackTrace();
-            Window.destroy();
-            return null;
-        }
+    public static byte[] getByteArray(String filepath) throws IOException {
+        return ByteStreams.toByteArray(getInputStream(filepath));
     }
 
     /**
@@ -82,25 +72,19 @@ public class FileIO {
      * @param filepath
      * @return 
      */
-    public static String getString(String filepath) {
+    public static String getString(String filepath) throws IOException {
         BufferedReader reader = getBufferedReader(filepath);
         String line;
         StringBuilder stringBuilder = new StringBuilder();
         String ls = System.getProperty("line.separator");
 
-        try {
-            while((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
-                stringBuilder.append(ls);
-            }
-            reader.close();
-
-            return stringBuilder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Window.destroy();
-            return null;
+        while((line = reader.readLine()) != null) {
+            stringBuilder.append(line);
+            stringBuilder.append(ls);
         }
+        reader.close();
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -108,20 +92,14 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static List<String> getStringList(String filepath) {
+    public static List<String> getStringList(String filepath) throws IOException {
         BufferedReader reader = getBufferedReader(filepath);
         List<String> strings = new ArrayList<>();
         String line;
-        try {
-            while((line = reader.readLine()) != null)
-                strings.add(line);
-            reader.close();
-            return strings;
-        } catch (IOException e) {
-            e.printStackTrace();
-            Window.destroy();
-            return null;
-        }
+        while((line = reader.readLine()) != null)
+            strings.add(line);
+        reader.close();
+        return strings;
     }
 
     /**
@@ -129,19 +107,13 @@ public class FileIO {
      * @param filepath
      * @return
      */
-    public static String[] getStringArray(String filepath) {
+    public static String[] getStringArray(String filepath) throws IOException {
         BufferedReader reader = getBufferedReader(filepath);
         List<String> strings = new ArrayList<>();
         String line;
-        try {
-            while((line = reader.readLine()) != null)
-                strings.add(line);
-            reader.close();
-            return strings.toArray(new String[strings.size()]);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Window.destroy();
-            return null;
-        }
+        while((line = reader.readLine()) != null)
+            strings.add(line);
+        reader.close();
+        return strings.toArray(new String[strings.size()]);
     }
 }

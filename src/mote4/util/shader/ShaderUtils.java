@@ -24,9 +24,9 @@ public class ShaderUtils {
      * The index file must be in the res/shaders directory.
      */
     public static void loadIndex(String filename) {
-        BufferedReader br = FileIO.getBufferedReader("/res/shaders/"+filename);
-        String in;
         try {
+            BufferedReader br = FileIO.getBufferedReader("/res/shaders/"+filename);
+            String in;
             while((in = br.readLine()) != null) {
                 if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;

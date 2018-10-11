@@ -31,6 +31,7 @@
  */
 package mote4.util.audio;
 
+import mote4.scenegraph.Window;
 import mote4.util.FileIO;
 import org.lwjgl.openal.AL10;
 
@@ -111,8 +112,13 @@ public class WaveData {
 	 * @return WaveData containing data, or null if a failure occured
 	 */
 	public static WaveData create(String path) {
-		return create(FileIO.getInputStream(path));
-		//return create(Thread.currentThread().getContextClassLoader().getResource(path));
+		try {
+			return create(FileIO.getInputStream(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+			Window.destroy();
+			return null;
+		}
 	}
 	
 	/**

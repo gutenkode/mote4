@@ -1,9 +1,11 @@
 package mote4.util.texture;
 
+import mote4.scenegraph.Window;
 import mote4.util.ErrorUtils;
 import mote4.util.FileIO;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -38,9 +40,10 @@ public class ImageUtil {
         int width, height, components;
         ByteBuffer image, rawImage;
 
-        rawImage = FileIO.getByteBuffer(filepath);
 
         try (MemoryStack stack = stackPush()) {
+            rawImage = FileIO.getByteBuffer(filepath);
+
             IntBuffer w    = stack.mallocInt(1);
             IntBuffer h    = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
@@ -65,6 +68,10 @@ public class ImageUtil {
             //if (components == 4) // RGBA
             //    premultiplyAlpha(image, width, height);
             return createTexture(image, width, height, components, texType, filterByDefault, enableMipmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return null;
         }
     }
 

@@ -21,9 +21,9 @@ public class MeshMap {
      * The index file must be in the res/models directory.
      */
     public static void loadIndex(String filename) {
-        BufferedReader br = FileIO.getBufferedReader("/res/models/"+filename);
-        String in;
         try {
+            BufferedReader br = FileIO.getBufferedReader("/res/models/"+filename);
+            String in;
             while((in = br.readLine()) != null) {
                 if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;

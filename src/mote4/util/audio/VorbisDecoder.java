@@ -1,9 +1,11 @@
 package mote4.util.audio;
 
+import mote4.scenegraph.Window;
 import mote4.util.FileIO;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbisInfo;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -42,8 +44,14 @@ public class VorbisDecoder {
     int samplesLeft;
 
     VorbisDecoder(String filePath, boolean loop) {
-        vorbis = FileIO.getByteBuffer(filePath);
-
+        ByteBuffer buffer = null;
+        try {
+            buffer = FileIO.getByteBuffer(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+        }
+        vorbis = buffer;
         this.loop = loop;
 
         source = alGenSources();

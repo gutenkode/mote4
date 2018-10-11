@@ -1,10 +1,12 @@
 package mote4.util.vertex;
 
+import mote4.scenegraph.Window;
 import mote4.util.FileIO;
 import mote4.util.vertex.builder.StaticMeshBuilder;
 import mote4.util.vertex.mesh.Mesh;
 import org.lwjgl.opengl.GL11;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -273,11 +275,17 @@ public class FontUtils {
      * @param name Name to use when binding this metric.
      */
     public static void loadMetric(String file, String name) {
-        byte[] m = FileIO.getByteArray("/res/textures/" +file+".metric");
-        if (m.length != 258)
-            throw new IllegalArgumentException("Metrics file must be 258 bytes long, was "+m.length+" bytes.");
-        metricMap.put(name, m);
-        useMetric(name);
+        try {
+            byte[] m = FileIO.getByteArray("/res/textures/" + file + ".metric");
+            if (m.length != 258)
+                throw new IllegalArgumentException("Metrics file must be 258 bytes long, was " + m.length + " bytes.");
+            metricMap.put(name, m);
+            useMetric(name);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Window.destroy();
+            return;
+        }
     }
     public static void useMetric(String name) {
         if (!metricMap.containsKey(name))
