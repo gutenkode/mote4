@@ -201,6 +201,10 @@ public class VorbisDecoder {
         return true;
     }
 
+    void setVolume(float volume) {
+        alSourcef(source, AL_GAIN, volume);
+    }
+
     void close() {
         stb_vorbis_close(handle);
         alDeleteSources(source);

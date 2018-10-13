@@ -18,21 +18,40 @@ public class AudioPlayback {
 
     private static boolean playSfx, playMusic, isMusicPlaying;
     private static String currentMusic;
+    private static float sfxVolume, musicVolume;
+
     private static List<Integer> sources;
     private static Map<String, Integer> loopingSfx;
     private static VorbisDecoder musicDecoder;
+
     static {
         sources = new ArrayList<>();
         loopingSfx = new HashMap<>();
         currentMusic = "";
         playSfx = playMusic = true;
         isMusicPlaying = false;
+        sfxVolume = 1;
+        musicVolume = 1;
     }
 
     public static void enableSfx(boolean enable) { playSfx = enable; }
     public static void enableMusic(boolean enable) { playMusic = enable; } // TODO same as other todo in playMusic()
     public static boolean isSfxEnabled() { return playSfx; }
     public static boolean isMusicEnabled() { return playMusic; }
+
+    public static void setSfxVolume(float volume) {
+        sfxVolume = volume;
+        for (int source : loopingSfx.values())
+            alSourcef(source, AL_GAIN, sfxVolume);
+    }
+    public static void setMusicVolume(float volume) {
+        musicVolume = volume;
+        if (musicDecoder != null) {
+            musicDecoder.setVolume(musicVolume);
+        }
+    }
+    public static float getSfxVolume() { return sfxVolume; }
+    public static float getMusicVolume() { return musicVolume; }
 
     /**
      * Play an audio buffer as sfx.
@@ -68,7 +87,7 @@ public class AudioPlayback {
 
         alSourcei(source, AL_BUFFER, AudioLoader.bufferMap.get(name));
         alSourcei(source, AL_LOOPING, AL_FALSE);
-        alSourcef(source, AL_GAIN, 1f);
+        alSourcef(source, AL_GAIN, sfxVolume);
         alSourcef(source, AL_PITCH, 1f);
         alSourcePlay(source);
 
@@ -93,7 +112,7 @@ public class AudioPlayback {
 
         alSourcei(source, AL_BUFFER, AudioLoader.bufferMap.get(name));
         alSourcei(source, AL_LOOPING, AL_TRUE);
-        alSourcef(source, AL_GAIN, 1f);
+        alSourcef(source, AL_GAIN, sfxVolume);
         alSourcef(source, AL_PITCH, 1f);
         alSourcePlay(source);
 
@@ -103,6 +122,10 @@ public class AudioPlayback {
     public static void pauseAllLoopingSfx() {
         for (int source : loopingSfx.values())
             alSourcePause(source);
+    }
+    public static void stopAllLoopingSfx() {
+        for (String name : loopingSfx.keySet())
+            stopLoopingSfx(name);
     }
     public static void unpauseAllLoopingSfx() {
         for (int source : loopingSfx.values())
@@ -143,6 +166,7 @@ public class AudioPlayback {
                 System.err.println("Music playback failed.");
                 Window.destroy();
             }
+            musicDecoder.setVolume(musicVolume);
         }
         currentMusic = name;
         isMusicPlaying = true;

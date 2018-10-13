@@ -55,6 +55,7 @@ public class ALContext {
 
     public static void destroyContext() {
         if (created) {
+            AudioPlayback.stopAllLoopingSfx();
             AudioPlayback.clear();
 
             alcSetThreadContext(NULL);

@@ -78,10 +78,10 @@ public class ShaderUtils {
      */
     public static StringBuilder loadSourceAsStringBuilder(String sourcePath) {
         StringBuilder source = new StringBuilder();
+        String line = null;
         try 
         {
             BufferedReader reader = FileIO.getBufferedReader("/res/shaders/"+sourcePath);
-            String line;
             while ((line = reader.readLine()) != null) {
                 source.append(line).append("\n");
             }
@@ -89,7 +89,7 @@ public class ShaderUtils {
         } 
         catch (IOException e) 
         {
-            System.err.println("Problem loading shader.\nMost likely the file could not be found.");
+            System.err.println("Problem loading shader: "+sourcePath+"\nMost likely the file could not be found.");
             e.printStackTrace();
             Window.destroy();
         }
