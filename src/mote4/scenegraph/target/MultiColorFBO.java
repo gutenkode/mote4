@@ -25,7 +25,7 @@ public class MultiColorFBO  extends Target {
     private int[] colorTextureID;
     private int   depthRenderBufferID,
                   stencilRenderBufferID;
-    private String textureName = null;
+    private String[] textureName;
     
     /**
      * Creates a framebuffer object.
@@ -56,6 +56,7 @@ public class MultiColorFBO  extends Target {
         width = w;
         height = h;
         int numAttachments = buffers.length;
+        textureName = new String[numAttachments];
         
         // create the list of attachments to bind when bind() is called
         drawBuffers = BufferUtils.createIntBuffer(numAttachments);
@@ -143,7 +144,7 @@ public class MultiColorFBO  extends Target {
      */
     public MultiColorFBO addToTextureMap(String name, int index) {
         TextureMap.add(colorTextureID[index], name);
-        textureName = name;
+        textureName[index] = name;
         return this;
     }
     
@@ -193,11 +194,14 @@ public class MultiColorFBO  extends Target {
     public void destroy() {
         glDeleteRenderbuffers(depthRenderBufferID);
         glDeleteRenderbuffers(stencilRenderBufferID);
-        if (textureName != null)
-            TextureMap.delete(textureName);
-        else
-            for (int i : colorTextureID)
-                glDeleteTextures(i);
+
+        for (int i = 0; i < colorTextureID.length; i++) {
+            if (textureName[i] != null)
+                TextureMap.delete(textureName[i]);
+            else
+                glDeleteTextures(colorTextureID[i]);
+        }
+
         glDeleteFramebuffers(bufferIndex);
     }
 }
