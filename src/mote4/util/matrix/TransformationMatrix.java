@@ -136,4 +136,6 @@ public class TransformationMatrix implements Bindable {
         matrix.get(buffer);
         Uniform.mat4(name, buffer);
     }
+
+    public Matrix4f matrix() { return matrix; }
 }
