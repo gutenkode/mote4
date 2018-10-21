@@ -37,7 +37,7 @@ public class MeshMap {
                     } else
                         System.err.println("Unsupported model format, only .obj files can be loaded: "+keys[0]);
                 } else
-                    System.out.println("Invalid shader index line: "+in);
+                    System.out.println("Invalid model index line: "+in);
             }
         } catch (IOException e) {
             System.err.println("Error reading model index file.");

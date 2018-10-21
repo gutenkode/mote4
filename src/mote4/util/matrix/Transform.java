@@ -1,8 +1,13 @@
 package mote4.util.matrix;
 
 import mote4.util.shader.Bindable;
+import mote4.util.shader.Uniform;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.lwjgl.BufferUtils;
+
+import java.nio.FloatBuffer;
 
 /**
  * Encapsulates a projection, view, and model matrix in one object.
@@ -10,6 +15,7 @@ import org.joml.Vector4f;
  */
 public class Transform implements Bindable {
 
+    private static FloatBuffer normalMatrixBuffer = BufferUtils.createFloatBuffer(9);
     private static Transform currentTransform;
 
     public static void rebindCurrentTransform() {
@@ -19,8 +25,9 @@ public class Transform implements Bindable {
 
     //////////////////
 
-    public TransformationMatrix projection,view,model;
-    private boolean enableSetCurrent = false;
+    public final TransformationMatrix projection,view,model;
+    private boolean enableSetCurrent = false, enableNormalMatrix = false;
+    private Matrix3f normalMatrix;
     
     public Transform() {
         this(false);
@@ -30,6 +37,7 @@ public class Transform implements Bindable {
         projection = new TransformationMatrix("projectionMatrix");
         view = new TransformationMatrix("viewMatrix");
         model = new TransformationMatrix("modelMatrix");
+        normalMatrix = new Matrix3f();
     }
 
     @Override
@@ -39,7 +47,22 @@ public class Transform implements Bindable {
         projection.bind();
         view.bind();
         model.bind();
+        if (enableNormalMatrix)
+            bindWorldspaceNormalMatrix();
     }
+
+    private void bindWorldspaceNormalMatrix() {
+        normalMatrix.identity();
+
+        normalMatrix.set(model.matrix);
+        normalMatrix.invert();
+        normalMatrix.transpose();
+
+        normalMatrix.get(normalMatrixBuffer);
+        Uniform.mat3("normalMatrix", normalMatrixBuffer);
+    }
+
+    public void enableNormalMatrix(boolean b) { enableNormalMatrix = b; }
 
     /**
      * Sets the view matrix to an orthographic view, making walls and floors appear like 2D tiles.
