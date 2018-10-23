@@ -66,7 +66,7 @@ public class Mote4Example implements Scene {
         TextureMap.load("mote/crate", "test_tex").filter(true);
         TextureMap.load("mote/font/misterpixel", "font").filter(false);
         // character width metrics for a font
-        FontUtils.loadMetric("mote/font/misterpixel_metric","misterpixel");
+        FontUtils.loadMetric("mote/font/misterpixel","misterpixel");
         
         // load a .obj file into the game, boolean value is whether the model should be re-centered
         Mesh mesh = StaticMeshBuilder.constructVAOFromOBJ("mote/cube", false);
