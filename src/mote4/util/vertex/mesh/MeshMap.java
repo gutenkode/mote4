@@ -21,9 +21,9 @@ public class MeshMap {
      * The index file must be in the res/models directory.
      */
     public static void loadIndex(String filename) {
+        String in = null;
         try {
             BufferedReader br = FileIO.getBufferedReader("/res/models/"+filename);
-            String in;
             while((in = br.readLine()) != null) {
                 if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;
@@ -37,10 +37,10 @@ public class MeshMap {
                     } else
                         System.err.println("Unsupported model format, only .obj files can be loaded: "+keys[0]);
                 } else
-                    System.out.println("Invalid model index line: "+in);
+                    System.err.println("Invalid model index line: "+in);
             }
-        } catch (IOException e) {
-            System.err.println("Error reading model index file.");
+        } catch (Exception e) {
+            System.err.println("Error while loading models from index file, line: "+in);
             e.printStackTrace();
             Window.destroy();
         }

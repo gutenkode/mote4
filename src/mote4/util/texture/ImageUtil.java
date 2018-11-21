@@ -69,6 +69,7 @@ public class ImageUtil {
             //    premultiplyAlpha(image, width, height);
             return createTexture(image, width, height, components, texType, filterByDefault, enableMipmap);
         } catch (IOException e) {
+            System.err.println("Error loading texture: "+filepath);
             e.printStackTrace();
             Window.destroy();
             return null;
