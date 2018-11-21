@@ -36,6 +36,12 @@ public class MultiColorFBO  extends Target {
      * @param numAttachments The number of color attachments to create.
      */
     public MultiColorFBO(int w, int h,  int numAttachments, boolean useDepthBuffer, boolean useStencilBuffer, int... formats) {
+        this(w,h,numAttachments,useDepthBuffer,useStencilBuffer,null,formats);
+    }
+
+    /** @param buffers Optional argument to pass in texture IDs to reuse as buffers.
+     */
+    public MultiColorFBO(int w, int h,  int numAttachments, boolean useDepthBuffer, boolean useStencilBuffer, int[] buffers, int... formats) {
         width = w;
         height = h;
         textureName = new String[numAttachments];
@@ -57,6 +63,11 @@ public class MultiColorFBO  extends Target {
         colorTextureID = new int[numAttachments];
         for (int i = 0; i < numAttachments; i++)
         {
+            if (buffers != null && buffers[i] != -1) {
+                // reuse existing buffer indices, if provided
+                colorTextureID[i] = buffers[i];
+                continue;
+            }
             colorTextureID[i] = glGenTextures(); // create a new texture
 
             // bind the texture
