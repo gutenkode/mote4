@@ -296,4 +296,22 @@ public class FontUtils {
         letterWidth = 1;//(float)charPixelWidth/charPixelHeight; // letterWidth is essentially the aspect ratio of the characters
         lineSpace = letterHeight = 1;
     }
+
+    public static String breakIntoLines(String source, int lineLengthLimit) {
+        String[] words = source.split(" ");
+        StringBuilder sb = new StringBuilder();
+        int lineLength = 0;
+        for (String word : words) {
+            sb.append(word);
+            lineLength += word.length();
+            if (word.contains("\n"))
+                lineLength = word.replaceAll("\n","").length();
+            if (lineLength >= lineLengthLimit) {
+                sb.append("\n");
+                lineLength = 0;
+            } else
+                sb.append(" ");
+        }
+        return sb.toString();
+    }
 }
