@@ -21,6 +21,7 @@ public class ALContext {
 
     private static boolean created = false;
     private static long device, context;
+    private static String lastDefaultDevice;
 
     /**
      * Creates the OpenAL context.  
@@ -31,10 +32,13 @@ public class ALContext {
             return;
 
         // Can call "alc" functions at any time
-        device = alcOpenDevice((ByteBuffer)null);
+        lastDefaultDevice = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
+        device = alcOpenDevice(lastDefaultDevice);
         if (device == NULL)
             throw new IllegalStateException("Failed to open the default device.");
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+
+        //ALUtils.printALCInfo(device, deviceCaps);
 
         context = alcCreateContext(device, (IntBuffer)null);
         if (context == NULL)
@@ -42,6 +46,9 @@ public class ALContext {
 
         alcMakeContextCurrent(context);
         AL.createCapabilities(deviceCaps);
+
+        //ALUtils.printALInfo();
+        //ALUtils.printDevices();
 
         alListenerfv(AL_ORIENTATION, new float[] { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
         alListener3f(AL_POSITION, 0, 0, 0);
@@ -65,5 +72,9 @@ public class ALContext {
             System.out.println("OpenAL terminated.");
             created = false;
         }
+    }
+
+    public static String getCurrentDevice() {
+        return lastDefaultDevice;
     }
 }
