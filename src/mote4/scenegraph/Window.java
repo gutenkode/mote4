@@ -379,6 +379,9 @@ public class Window {
     public static void displayDeltaInTitle(boolean enable) {
         displayDelta = enable;
     }
+    public static int getPrimaryDisplayRefreshRate() {
+        return glfwGetVideoMode(glfwGetPrimaryMonitor()).refreshRate();
+    }
     
     // Window utilities
     /**

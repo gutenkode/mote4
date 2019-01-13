@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -24,6 +27,28 @@ public class FileIO {
     private static Module currentModule;
     static {
         currentModule = FileIO.class.getModule();
+    }
+
+    /**
+     * Check to see if a file exists/can be found.
+     * @param filepath
+     * @return
+     */
+    public static boolean isFilePresent(String filepath) {
+        try {
+            InputStream is = currentModule.getResourceAsStream(filepath);
+            if (is == null)
+                System.err.println("Unable to read file, null InputStream.");
+            return (is != null);
+        } catch (Exception e) {
+            System.err.println("Unable to read file: "+e.getMessage());
+            return false;
+        }
+    }
+
+    public static void saveFileAs(List<String> contents, String filepath) throws IOException {
+        Path path = Paths.get(filepath);
+        Files.write(path, contents, Charset.forName("UTF-8"));
     }
 
     /**

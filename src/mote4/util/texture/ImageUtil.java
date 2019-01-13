@@ -33,6 +33,7 @@ public class ImageUtil {
 
     public static void filterByDefault(boolean b) { filterByDefault = b; }
     public static void enableMipmap(boolean b) { enableMipmap = b; }
+    public static boolean isMipmapEnabled() { return enableMipmap; }
 
     protected static Texture loadImage2D(String filepath) { return loadImage(filepath, GL_TEXTURE_2D); }
     protected static Texture loadImageCubemap(String filepath) { return loadImage(filepath, GL_TEXTURE_CUBE_MAP); }
