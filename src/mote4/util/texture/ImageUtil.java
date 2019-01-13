@@ -40,7 +40,6 @@ public class ImageUtil {
         int width, height, components;
         ByteBuffer image, rawImage;
 
-
         try (MemoryStack stack = stackPush()) {
             rawImage = FileIO.getByteBuffer(filepath);
 

@@ -128,6 +128,7 @@ public class FBO extends Target {
             TextureMap.untrack(textureName);
         TextureMap.add(colorTextureID, name);
         textureName = name;
+        TextureMap.get(name).filter(true);
         return this;
     }
     

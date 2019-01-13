@@ -80,6 +80,7 @@ public class Uniform {
             default:
                 throw new IllegalArgumentException("The max component size for a vec is 4.");
         }
+        ErrorUtils.checkGLError();
     }
 
     /**
