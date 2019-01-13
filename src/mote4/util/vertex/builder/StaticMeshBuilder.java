@@ -245,7 +245,18 @@ public class StaticMeshBuilder {
                 0, null,
                 new float[] {0,0,1, 0,0,1, 0,0,1, 0,0,1});
     }
-    
+
+    /**
+     * Constructs an empty mesh.
+     * @return
+     */
+    public static Mesh loadEmptyMesh() {
+        return constructVAO(GL11.GL_TRIANGLE_FAN,
+                2, new float[] {0,0},
+                0, null,
+                0, null,null);
+    }
+
     /**
      * Load a .obj file as a renderable mesh.
      * @param filename
