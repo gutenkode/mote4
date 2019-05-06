@@ -18,7 +18,8 @@ public class AudioPlayback {
 
     private static boolean playSfx, playMusic, isMusicPlaying;
     private static String currentMusic;
-    private static float sfxVolume, musicVolume;
+    private static float sfxVolume, musicVolume, musicFadeVolume, fadeStartGain, fadeEndGain;
+    private static double fadeStartTime, fadeTransitionTime;
 
     private static List<Integer> sources;
     private static Map<String, Integer> loopingSfx;
@@ -32,12 +33,25 @@ public class AudioPlayback {
         isMusicPlaying = false;
         sfxVolume = 1;
         musicVolume = 1;
+        musicFadeVolume = 1;
     }
 
-    public static void enableSfx(boolean enable) { playSfx = enable; }
-    public static void enableMusic(boolean enable) { playMusic = enable; } // TODO same as other todo in playMusic()
+    ////////////////////
+    // Config methods
+
+    public static void enableSfx(boolean enable) {
+        playSfx = enable;
+        if (!playSfx)
+            pauseAllLoopingSfx();
+    }
+    public static void enableMusic(boolean enable) {
+        playMusic = enable;
+        if (!playMusic)
+            pauseMusic(); // automatically pause music, but don't automatically start playing it
+    }
     public static boolean isSfxEnabled() { return playSfx; }
     public static boolean isMusicEnabled() { return playMusic; }
+    public static boolean isMusicPlaying() { return isMusicPlaying; }
 
     public static void setSfxVolume(float volume) {
         sfxVolume = volume;
@@ -52,6 +66,9 @@ public class AudioPlayback {
     }
     public static float getSfxVolume() { return sfxVolume; }
     public static float getMusicVolume() { return musicVolume; }
+
+    ////////////////////
+    // Sfx methods
 
     /**
      * Play an audio buffer as sfx.
@@ -119,6 +136,10 @@ public class AudioPlayback {
         ErrorUtils.checkALError();
     }
 
+
+    ////////////////////
+    // Looping sfx methods
+
     public static void pauseAllLoopingSfx() {
         for (int source : loopingSfx.values())
             alSourcePause(source);
@@ -128,21 +149,29 @@ public class AudioPlayback {
             stopLoopingSfx(name);
     }
     public static void unpauseAllLoopingSfx() {
-        for (int source : loopingSfx.values())
-            alSourcePlay(source);
+        if (playSfx)
+            for (int source : loopingSfx.values())
+                alSourcePlay(source);
     }
 
     public static void stopLoopingSfx(String name) {
-        int source = loopingSfx.get(name);
-        alSourceStop(source);
-        alDeleteSources(source);
-        loopingSfx.remove(name);
+        if (loopingSfx.containsKey(name)) {
+            int source = loopingSfx.get(name);
+            alSourceStop(source);
+            alDeleteSources(source);
+            loopingSfx.remove(name);
+        }
     }
 
     public static void setLoopingSfxPitch(String name, float pitch) {
-        int source = loopingSfx.get(name);
-        alSourcef(source, AL_PITCH, pitch);
+        if (loopingSfx.containsKey(name)) {
+            int source = loopingSfx.get(name);
+            alSourcef(source, AL_PITCH, pitch);
+        }
     }
+
+    ////////////////////
+    // Music methods
 
     /**
      * Play an audio buffer as music.
@@ -150,8 +179,6 @@ public class AudioPlayback {
      * @param name
      */
     public static void playMusic(String name, boolean loop) {
-        if (!playMusic) // TODO toggling music should simply start/pause a loaded audio buffer, instead of not loading music
-            return;
         if (!AudioLoader.vorbisMap.containsKey(name))
             throw new IllegalArgumentException("Vorbis file was not specified at runtime: '"+name+"'.");
 
@@ -166,6 +193,15 @@ public class AudioPlayback {
                 System.err.println("Music playback failed.");
                 Window.destroy();
             }
+            // even if music is disabled, songs will be loaded and ready to play
+            if (!playMusic) {
+                alSourcePause(musicDecoder.source);
+                isMusicPlaying = false;
+            }
+
+            // reset all music volume and fade parameters upon new music
+            fadeStartGain = 1;
+            fadeEndGain = 1;
             musicDecoder.setVolume(musicVolume);
         }
         currentMusic = name;
@@ -201,11 +237,29 @@ public class AudioPlayback {
      * If a music decoder exists, play it.
      */
     public static void resumeMusic() {
-        if (musicDecoder != null) {
-            alSourcePlay(musicDecoder.source);
-            isMusicPlaying = true;
-        }
+        if (playMusic)
+            if (musicDecoder != null) {
+                alSourcePlay(musicDecoder.source);
+                isMusicPlaying = true;
+            }
     }
+
+    /**
+     * Create a volume fade for currently playing music. Music is NOT paused, even if target gain is 0.
+     * @param startGain The music will immediately be set to this level, scaled by the music volume.  A value of 1 is "full", independent of normal volume setting.
+     * @param endGain The music will fade smoothly to this level.
+     * @param time How long in seconds the transition should take.
+     */
+    public static void setMusicFade(float startGain, float endGain, double time) {
+        fadeStartGain = startGain;
+        fadeEndGain = endGain;
+        fadeStartTime = Window.time();
+        fadeTransitionTime = time;
+        musicFadeVolume = startGain;
+    }
+
+    ////////////////////
+    // Utility methods
 
     /**
      * Updates streaming music; called by the game loop.
@@ -213,9 +267,19 @@ public class AudioPlayback {
     public static void updateMusic() {
         // TODO support fading music in/out
         if (musicDecoder != null) {
+
+            musicFadeVolume = getMusicFade();
+            musicDecoder.setVolume(musicVolume * musicFadeVolume);
+
             if (isMusicPlaying)
                 musicDecoder.update();
         }
+    }
+
+    private static float getMusicFade() {
+        double step = (Window.time()-fadeStartTime)/fadeTransitionTime;
+        step = Math.max(0, Math.min(1, step));
+        return fadeStartGain *(float)(1-step) + fadeEndGain *(float)step;
     }
 
     private static int createSource() {

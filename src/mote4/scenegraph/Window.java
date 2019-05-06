@@ -483,6 +483,9 @@ public class Window {
             glfwSwapInterval(1); // auto-enable vsync, if flag is set
         else
             glfwSwapInterval(0);
+
+        glDrawBuffer(0);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
     public static boolean isFullscreen() { return isFullscreen; }
     

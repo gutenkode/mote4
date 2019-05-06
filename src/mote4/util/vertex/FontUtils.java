@@ -301,16 +301,21 @@ public class FontUtils {
         String[] words = source.split(" ");
         StringBuilder sb = new StringBuilder();
         int lineLength = 0;
-        for (String word : words) {
-            sb.append(word);
+        for (String word : words)
+        {
             lineLength += word.length();
             if (word.contains("\n"))
                 lineLength = word.replaceAll("\n","").length();
+
             if (lineLength >= lineLengthLimit) {
                 sb.append("\n");
-                lineLength = 0;
-            } else
+                sb.append(word);
                 sb.append(" ");
+                lineLength = 0;
+            } else {
+                sb.append(word);
+                sb.append(" ");
+            }
         }
         return sb.toString();
     }

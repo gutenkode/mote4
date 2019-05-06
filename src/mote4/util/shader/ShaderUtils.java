@@ -108,7 +108,7 @@ public class ShaderUtils {
         int id = GL20.glCreateShader(type);
         GL20.glShaderSource(id, source);
         GL20.glCompileShader(id);
-        
+
         if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
             String log = GL20.glGetShaderInfoLog(id, 1000);
             System.err.println("#####\nError compiling shader:\n" + source+"\n#####\n"+log+"\n#####");
