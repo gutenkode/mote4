@@ -65,7 +65,7 @@ public class FBO extends Target {
         
         // create the texture data
         if (tex == null)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, (java.nio.ByteBuffer) null);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_INT, (java.nio.ByteBuffer) null);
         
         // attach the texture to the framebuffer
         glFramebufferTexture2D(GL_FRAMEBUFFER,       // must be GL_FRAMEBUFFER

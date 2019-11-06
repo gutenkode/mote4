@@ -70,12 +70,16 @@ public class AudioPlayback {
     ////////////////////
     // Sfx methods
 
+
     /**
      * Play an audio buffer as sfx.
      * Sfx will always play their full length without interruption, and not loop.
      * @param name
      */
     public static void playSfx(String name) {
+        playSfx(name,1f,1f);
+    }
+    public static void playSfx(String name, float gain, float pitch) {
         if (!playSfx)
             return;
         if (!AudioLoader.bufferMap.containsKey(name))
@@ -104,8 +108,8 @@ public class AudioPlayback {
 
         alSourcei(source, AL_BUFFER, AudioLoader.bufferMap.get(name));
         alSourcei(source, AL_LOOPING, AL_FALSE);
-        alSourcef(source, AL_GAIN, sfxVolume);
-        alSourcef(source, AL_PITCH, 1f);
+        alSourcef(source, AL_GAIN, sfxVolume *gain);
+        alSourcef(source, AL_PITCH, pitch);
         alSourcePlay(source);
 
         ErrorUtils.checkALError();
