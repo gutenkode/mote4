@@ -3,6 +3,7 @@ package mote4.util.vertex;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import mote4.util.ErrorUtils;
 import org.lwjgl.opengl.GL11;
@@ -178,7 +179,7 @@ public class OBJLoader {
             
         } catch (IOException e) {
             System.out.println("Failed to read file: " + br.toString());
-            System.out.println(e.getMessage());
+            System.out.println(Arrays.toString(e.getStackTrace()));
             //System.exit(0);
         } catch (NumberFormatException e) {
             System.out.println("Malformed OBJ (on line " + linecounter + "): " + br.toString() + "\r \r" + e.getMessage());
