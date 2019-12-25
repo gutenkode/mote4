@@ -2,6 +2,7 @@ package mote4.example;
 
 import mote4.scenegraph.Scene;
 import mote4.scenegraph.Window;
+import mote4.util.Config;
 import mote4.util.ErrorUtils;
 import mote4.util.matrix.Transform;
 import mote4.util.shader.ShaderMap;
@@ -58,6 +59,9 @@ public class Mote4Example implements Scene {
 
     private static void loadResources() 
     {
+        System.out.println("OS config location: "+ Config.getDefaultPath("moteEngine"));
+        System.out.println("App install location: "+ Config.getInstallPath());
+
         // create a shader
         // first two arguments are source files, last argument is the shader's handle
         ShaderUtils.addProgram("mote/texture.vert", "mote/texture.frag", "texture");

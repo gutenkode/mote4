@@ -119,7 +119,8 @@ public class AudioPlayback {
      * Will play a sfx effect on loop until told to stop.
      * @param name
      */
-    public static void loopSfx(String name) {
+    public static void loopSfx(String name) { loopSfx(name,1); }
+    public static void loopSfx(String name, float gain) {
         if (!playSfx)
             return;
         if (!AudioLoader.bufferMap.containsKey(name))
@@ -133,7 +134,7 @@ public class AudioPlayback {
 
         alSourcei(source, AL_BUFFER, AudioLoader.bufferMap.get(name));
         alSourcei(source, AL_LOOPING, AL_TRUE);
-        alSourcef(source, AL_GAIN, sfxVolume);
+        alSourcef(source, AL_GAIN, sfxVolume *gain);
         alSourcef(source, AL_PITCH, 1f);
         alSourcePlay(source);
 
