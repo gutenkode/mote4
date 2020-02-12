@@ -2,6 +2,7 @@ package mote4.scenegraph;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import mote4.scenegraph.target.Framebuffer;
@@ -14,13 +15,16 @@ import mote4.util.vertex.mesh.MeshMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
+import static org.lwjgl.stb.STBImage.stbi_load;
 import static org.lwjgl.system.MemoryUtil.*;
  
 /**
@@ -422,6 +426,27 @@ public class Window {
                           screenSize.height};
     }
     public static boolean windowHasFocus() { return windowHasFocus; }
+    /**
+     * Loads an image and sets it as the application icon.
+     */
+    public static void setWindowIcon(String filepath) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer imgData;
+            IntBuffer comp = stack.mallocInt(1);
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+
+            imgData = stbi_load(filepath, w, h, comp, 4);
+            if (imgData == null)
+                throw new IllegalArgumentException("Could not read image '" + filepath + "': ByteBuffer is null");
+
+            GLFWImage image = GLFWImage.malloc();
+            GLFWImage.Buffer buf = GLFWImage.malloc(1);
+            image.set(w.get(), h.get(), imgData);
+            buf.put(0, image);
+            glfwSetWindowIcon(window, buf);
+        }
+    }
 
     /**
      * Switch to a windowed display mode.
