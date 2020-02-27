@@ -303,15 +303,12 @@ public class FontUtils {
         int lineLength = 0;
         for (String word : words)
         {
-            word = word.trim();
-            /*if (word.contains("\n")) {
-                String s1 = word.substring(0,word.indexOf('\n'));
-                String s2 = word.substring(word.indexOf('\n')+1);
-                //word = word.replaceAll("\n", "");
-            } else*/
-                word = word+" ";
-
-            lineLength += word.length();
+            //word = word.trim();
+            word = word + " ";
+            if (word.contains("\n"))
+                lineLength = word.length();
+            else
+                lineLength += word.length();
 
             if (lineLength >= lineLengthLimit) {
                 sb.append("\n");

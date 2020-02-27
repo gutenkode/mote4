@@ -1,12 +1,10 @@
 package mote4.util;
 
 import com.google.common.io.ByteStreams;
-import mote4.scenegraph.Window;
 import org.lwjgl.BufferUtils;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -58,10 +56,7 @@ public class FileIO {
      * @return
      */
     public static InputStream getInputStream(String filepath) throws IOException {
-        InputStream is = new BufferedInputStream(currentModule.getResourceAsStream(filepath));
-        if (is == null)
-            throw new IllegalArgumentException("Could not open '" + filepath + "': InputStream is null");
-        return is;
+        return new BufferedInputStream(currentModule.getResourceAsStream(filepath));
     }
 
     /**
