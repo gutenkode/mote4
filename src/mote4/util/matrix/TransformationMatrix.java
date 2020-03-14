@@ -3,6 +3,8 @@ package mote4.util.matrix;
 import mote4.util.shader.Bindable;
 import mote4.util.shader.Uniform;
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -35,6 +37,12 @@ public class TransformationMatrix implements Bindable {
     }
     public void translate(float x, float y, float z) {
         matrix.translate(x, y, z);
+    }
+    public void translate(Vector3f vec) {
+        matrix.translate(vec.x, vec.y, vec.z);
+    }
+    public void translate(Vector3d vec) {
+        matrix.translate((float)vec.x, (float)vec.y, (float)vec.z);
     }
     public void rotate(float r, float x, float y, float z) {
         matrix.rotate(r, x, y, z);
