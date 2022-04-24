@@ -184,8 +184,12 @@ public class OBJLoader {
         } catch (NumberFormatException e) {
             System.out.println("Malformed OBJ (on line " + linecounter + "): " + br.toString() + "\r \r" + e.getMessage());
             //System.exit(0);
+        } catch (Exception e) {
+            System.out.println("Error reading file: " + br.toString());
+            System.out.println(Arrays.toString(e.getStackTrace()));
+            //System.exit(0);
         }
-        
+
     }
     
     private void centerit() {

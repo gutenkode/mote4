@@ -3,8 +3,6 @@ package mote4.util.matrix;
 import mote4.util.shader.Bindable;
 import mote4.util.shader.Uniform;
 import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;

@@ -79,4 +79,12 @@ public class AudioLoader {
         // ogg files are loaded when they are played, so only store the filepath
         vorbisMap.put(name, "/res/audio/"+filepath+".ogg");
     }
+
+    public static int getNumSongs() {
+        return vorbisMap.size();
+    }
+
+    public static String[] getAllSongNames() {
+        return vorbisMap.keySet().toArray(new String[0]);
+    }
 }

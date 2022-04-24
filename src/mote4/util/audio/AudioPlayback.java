@@ -16,7 +16,7 @@ import static org.lwjgl.openal.AL10.alGetSourcei;
  */
 public class AudioPlayback {
 
-    private static boolean playSfx, playMusic, isMusicPlaying;
+    private static boolean playSfx, playMusic, isMusicPlaying, isMusicPaused;
     private static String currentMusic;
     private static float sfxVolume, musicVolume, musicFadeVolume, fadeStartGain, fadeEndGain;
     private static double fadeStartTime, fadeTransitionTime;
@@ -31,6 +31,7 @@ public class AudioPlayback {
         currentMusic = "";
         playSfx = playMusic = true;
         isMusicPlaying = false;
+        isMusicPaused = false;
         sfxVolume = 1;
         musicVolume = 1;
         musicFadeVolume = 1;
@@ -52,6 +53,7 @@ public class AudioPlayback {
     public static boolean isSfxEnabled() { return playSfx; }
     public static boolean isMusicEnabled() { return playMusic; }
     public static boolean isMusicPlaying() { return isMusicPlaying; }
+    public static boolean isIsMusicPaused() { return isMusicPaused; }
 
     public static void setSfxVolume(float volume) {
         sfxVolume = volume;
@@ -69,7 +71,6 @@ public class AudioPlayback {
 
     ////////////////////
     // Sfx methods
-
 
     /**
      * Play an audio buffer as sfx.
@@ -211,6 +212,7 @@ public class AudioPlayback {
         }
         currentMusic = name;
         isMusicPlaying = true;
+        isMusicPaused = false;
 
         ErrorUtils.checkALError();
     }
@@ -223,6 +225,7 @@ public class AudioPlayback {
             alSourceStop(musicDecoder.source);
             musicDecoder.rewind();
             isMusicPlaying = false;
+            isMusicPaused = false;
         }
     }
 
@@ -235,6 +238,7 @@ public class AudioPlayback {
         if (musicDecoder != null) {
             alSourcePause(musicDecoder.source);
             isMusicPlaying = false;
+            isMusicPaused = true;
         }
     }
 
@@ -246,8 +250,11 @@ public class AudioPlayback {
             if (musicDecoder != null) {
                 alSourcePlay(musicDecoder.source);
                 isMusicPlaying = true;
+                isMusicPaused = false;
             }
     }
+
+    public static String getCurrentMusic() { return currentMusic; }
 
     /**
      * Create a volume fade for currently playing music. Music is NOT paused, even if target gain is 0.
@@ -261,6 +268,9 @@ public class AudioPlayback {
         fadeStartTime = Window.time();
         fadeTransitionTime = time;
         musicFadeVolume = startGain;
+        if (isMusicPaused) {
+            resumeMusic();
+        }
     }
 
     ////////////////////
@@ -276,8 +286,19 @@ public class AudioPlayback {
             musicFadeVolume = getMusicFade();
             musicDecoder.setVolume(musicVolume * musicFadeVolume);
 
-            if (isMusicPlaying)
-                musicDecoder.update();
+
+            if (!isMusicPlaying) {
+                return;
+            }
+
+            if (musicFadeVolume == 0) {
+                pauseMusic();
+                return;
+            }
+
+            if (!musicDecoder.update()) {
+                stopMusic();
+            }
         }
     }
 
@@ -285,6 +306,10 @@ public class AudioPlayback {
         double step = (Window.time()-fadeStartTime)/fadeTransitionTime;
         step = Math.max(0, Math.min(1, step));
         return fadeStartGain *(float)(1-step) + fadeEndGain *(float)step;
+    }
+
+    public static float getCurrentFadeTarget() {
+        return fadeEndGain;
     }
 
     private static int createSource() {

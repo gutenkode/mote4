@@ -265,6 +265,7 @@ public class StaticMeshBuilder {
      */
     public static VAO constructVAOFromOBJ(String filename, boolean center) {
         try {
+            //System.out.println("Loading mesh: "+filename);
             OBJLoader obj = new OBJLoader(FileIO.getBufferedReader("/res/models/" + filename + ".obj"), center);
             VAO vao = obj.createVAO();
             return vao;
