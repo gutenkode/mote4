@@ -13,6 +13,7 @@ import mote4.util.shader.ShaderMap;
 import mote4.util.texture.TextureMap;
 import mote4.util.vertex.mesh.MeshMap;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -38,6 +39,7 @@ public class Window {
  
     private static long window = -1; // the glfw window handle
     private static long variableYieldTime, lastTime; // used in sync()
+    private static long currentMonitor;
     private static double DELTA_MAX = .04; // highest delta value a frame can have
     
     private static final int RESIZABLE = GLFW_TRUE;
@@ -138,10 +140,11 @@ public class Window {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         // create the window
-        GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        currentMonitor = glfwGetPrimaryMonitor();
+        GLFWVidMode mode = glfwGetVideoMode(currentMonitor);
         if (fullscreen) {
             // width and height are ignored
-            window = glfwCreateWindow(mode.width(), mode.height(), windowTitle, glfwGetPrimaryMonitor(), NULL);
+            window = glfwCreateWindow(mode.width(), mode.height(), windowTitle, currentMonitor, NULL);
             if (window == NULL)
                 throw new RuntimeException("Failed to create the GLFW window");
         } else {
@@ -383,11 +386,12 @@ public class Window {
     public static void displayDeltaInTitle(boolean enable) {
         displayDelta = enable;
     }
-    public static int getPrimaryDisplayRefreshRate() {
-        return glfwGetVideoMode(glfwGetPrimaryMonitor()).refreshRate();
+    public static int getCurrentMonitorRefreshRate() {
+        return glfwGetVideoMode(currentMonitor).refreshRate();
     }
     
     // Window utilities
+
     /**
      * Sets the window title. If deltaTime time information is displaying in
      * the window title, it will not be disabled.  If deltaTime time information
@@ -399,7 +403,9 @@ public class Window {
         if (window != -1)
             glfwSetWindowTitle(window, title);
     }
+
     public static long getWindowID() { return window; }
+
     /**
      * Returns the size of the main framebuffer, in pixels.
      * @return 
@@ -407,6 +413,7 @@ public class Window {
     public static int[] getFramebufferSize() {
         return new int[] {fbWidth, fbHeight};
     }
+
     /**
      * Returns the size of the window, in screen size.
      * On hidpi screens, this is may not be the same size as the framebuffer.
@@ -415,6 +422,7 @@ public class Window {
     public static int[] getWindowSize() {
         return new int[] {windowWidth, windowHeight};
     }
+
     /**
      * Returns the size of the display, in screen size.  Same scale as
      * getWindowSize().
@@ -425,7 +433,36 @@ public class Window {
         return new int[] {screenSize.width,
                           screenSize.height};
     }
+
     public static boolean windowHasFocus() { return windowHasFocus; }
+
+    public static int getNumMonitors() {
+        PointerBuffer glfwMonitors = glfwGetMonitors();
+        return glfwMonitors.limit();
+    }
+
+    public static long getCurrentMonitor() {
+        return currentMonitor;
+    }
+
+    public static void setCurrentMonitor(int monitorIndex, boolean fullscreen) {
+        PointerBuffer glfwMonitors = glfwGetMonitors();
+        currentMonitor = glfwMonitors.get(monitorIndex);
+        if (fullscreen)
+            setFullscreen();
+        else
+            setWindowedPercent(.85, 16 / 9d);
+    }
+
+    public static String getMonitorName(int monitorIndex) {
+        PointerBuffer glfwMonitors = glfwGetMonitors();
+        return glfwGetMonitorName(glfwMonitors.get(monitorIndex));
+    }
+
+    public static String getMonitorName(long monitor) {
+        return glfwGetMonitorName(monitor);
+    }
+
     /**
      * Loads an image and sets it as the application icon.
      */
@@ -455,8 +492,7 @@ public class Window {
      * @param h
      */
     public static void setWindowed(int w, int h) {
-        long monitor = glfwGetPrimaryMonitor();
-        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        GLFWVidMode mode = glfwGetVideoMode(currentMonitor);
         glfwWindowHint(GLFW_RED_BITS, mode.redBits());
         glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
@@ -475,8 +511,7 @@ public class Window {
      * @param aspectRatio The aspect ratio of the window, used to calculate the width.
      */
     public static void setWindowedPercent(double percentHeight, double aspectRatio) {
-        long monitor = glfwGetPrimaryMonitor();
-        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        GLFWVidMode mode = glfwGetVideoMode(currentMonitor);
 
         int h = (int)(mode.height()*percentHeight);
         int w = (int)(h*aspectRatio);
@@ -496,13 +531,12 @@ public class Window {
      * Switch to an exclusive fullscreen mode.
      */
     public static void setFullscreen() {
-        long monitor = glfwGetPrimaryMonitor();
-        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        GLFWVidMode mode = glfwGetVideoMode(currentMonitor);
         glfwWindowHint(GLFW_RED_BITS, mode.redBits());
         glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
-        glfwSetWindowMonitor(window, monitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
+        glfwSetWindowMonitor(window, currentMonitor, 0,0, mode.width(), mode.height(), mode.refreshRate());
         isFullscreen = true;
         if (useVsync)
             glfwSwapInterval(1); // auto-enable vsync, if flag is set
