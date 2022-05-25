@@ -543,8 +543,9 @@ public class Window {
         else
             glfwSwapInterval(0);
 
-        glDrawBuffer(0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // The following two lines screw up on (some?) linux
+        //glDrawBuffer(0);
+        //glClear(GL_COLOR_BUFFER_BIT);
     }
     public static boolean isFullscreen() { return isFullscreen; }
     
