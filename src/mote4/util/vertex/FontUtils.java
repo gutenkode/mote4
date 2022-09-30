@@ -297,27 +297,34 @@ public class FontUtils {
         lineSpace = letterHeight = 1;
     }
 
-    public static String breakIntoLines(String source, int lineLengthLimit) {
-        String[] words = source.split(" ");
+    public static String breakIntoLines(String source, String fontMetric, double lineLengthLimit) {
+        useMetric(fontMetric);
         StringBuilder sb = new StringBuilder();
-        int lineLength = 0;
-        for (String word : words)
-        {
-            //word = word.trim();
-            word = word + " ";
-            if (word.contains("\n"))
-                lineLength = word.length();
-            else
-                lineLength += word.length();
+        float spaceLength = getStringWidth(" ");
 
-            if (lineLength >= lineLengthLimit) {
-                sb.append("\n");
-                sb.append(word);
-                lineLength = word.length();
-            } else {
-                sb.append(word);
+        String[] lines = source.split("\n");
+        for (String line : lines)
+        {
+            float lineLength = 0;
+            String[] words = line.trim().split(" ");
+            for (String word : words)
+            {
+                word = word.trim();
+                float wordLength = getStringWidth(word);
+
+                if (lineLength+spaceLength+wordLength > lineLengthLimit) {
+                    sb.append("\n");
+                    sb.append(word);
+                    sb.append(" ");
+                    lineLength = wordLength+spaceLength;
+                } else {
+                    sb.append(word);
+                    sb.append(" ");
+                    lineLength += wordLength+spaceLength;
+                }
             }
+            sb.append("\n");
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
 }
