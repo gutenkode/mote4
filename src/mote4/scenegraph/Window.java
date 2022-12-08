@@ -463,6 +463,24 @@ public class Window {
         return glfwGetMonitorName(monitor);
     }
 
+    public static int getCurrentMonitorIndex() {
+        PointerBuffer glfwMonitors = glfwGetMonitors();
+        for (int i = 0; i < glfwMonitors.limit(); i++) {
+            if (glfwMonitors.get(i) == currentMonitor)
+                return i;
+        }
+        return 0;
+    }
+
+    public static int[] getMonitorDefaultMode(int monitorIndex) {
+        PointerBuffer glfwMonitors = glfwGetMonitors();
+        var monitor = glfwMonitors.get(monitorIndex);
+
+        var vidMode = glfwGetVideoMode(monitor);
+
+        return new int[] { vidMode.width(), vidMode.height(), vidMode.refreshRate() };
+    }
+
     /**
      * Loads an image and sets it as the application icon.
      */
