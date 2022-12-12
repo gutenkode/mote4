@@ -245,6 +245,8 @@ public class Window {
         // initialize scenes
         for (Layer l : layers)
             l.framebufferResized(fbWidth, fbHeight);
+
+        AudioPlayback.startUpdateThread();
  
         // run the rendering loop until the user has attempted to close the window
         try {
@@ -258,8 +260,6 @@ public class Window {
                     double displayDelta = deltaTime*1000;
                     glfwSetWindowTitle(window,"Delta: "+String.format("%.2f", displayDelta)+"\tFPS: "+String.format("%.1f", displayFps)+"/"+targetFps);
                 }
-
-                AudioPlayback.updateMusic(); // TODO call this in a separate thread to prevent missed updates
 
                 deltaTime = Math.min(DELTA_MAX, deltaTime); // prevent delta from exceeding 1/25, 25fps
 
@@ -283,10 +283,13 @@ public class Window {
                     glfwSwapInterval(1); // TODO this fixes vsync not applying when it is enabled and fullscreen is enabled, but it's called every frame... probably fine?
             }
             System.out.println("Window was closed, terminating...");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.err.println("Uncaught exception in game loop:");
             e.printStackTrace();
         }
+
+        AudioPlayback.stopUpdateThread();
         destroy();
     }
     /**
@@ -474,9 +477,9 @@ public class Window {
 
     public static int[] getMonitorDefaultMode(int monitorIndex) {
         PointerBuffer glfwMonitors = glfwGetMonitors();
-        var monitor = glfwMonitors.get(monitorIndex);
+        long monitor = glfwMonitors.get(monitorIndex);
 
-        var vidMode = glfwGetVideoMode(monitor);
+        GLFWVidMode vidMode = glfwGetVideoMode(monitor);
 
         return new int[] { vidMode.width(), vidMode.height(), vidMode.refreshRate() };
     }

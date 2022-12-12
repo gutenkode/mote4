@@ -25,6 +25,9 @@ public class AudioPlayback {
     private static Map<String, Integer> loopingSfx;
     private static VorbisDecoder musicDecoder;
 
+    private static double lastFade = -1;
+    private static volatile boolean updateLock = false;
+
     static {
         sources = new ArrayList<>();
         loopingSfx = new HashMap<>();
@@ -57,14 +60,17 @@ public class AudioPlayback {
 
     public static void setSfxVolume(float volume) {
         sfxVolume = volume;
-        for (int source : loopingSfx.values())
+        for (int source : loopingSfx.values()) {
             alSourcef(source, AL_GAIN, sfxVolume);
+        }
+        ErrorUtils.checkALError();
     }
     public static void setMusicVolume(float volume) {
         musicVolume = volume;
         if (musicDecoder != null) {
             musicDecoder.setVolume(musicVolume);
         }
+        ErrorUtils.checkALError();
     }
     public static float getSfxVolume() { return sfxVolume; }
     public static float getMusicVolume() { return musicVolume; }
@@ -149,15 +155,18 @@ public class AudioPlayback {
     public static void pauseAllLoopingSfx() {
         for (int source : loopingSfx.values())
             alSourcePause(source);
+        ErrorUtils.checkALError();
     }
     public static void stopAllLoopingSfx() {
         for (String name : loopingSfx.keySet())
             stopLoopingSfx(name);
+        ErrorUtils.checkALError();
     }
     public static void unpauseAllLoopingSfx() {
         if (playSfx)
             for (int source : loopingSfx.values())
                 alSourcePlay(source);
+        ErrorUtils.checkALError();
     }
 
     public static void stopLoopingSfx(String name) {
@@ -166,6 +175,7 @@ public class AudioPlayback {
             alSourceStop(source);
             alDeleteSources(source);
             loopingSfx.remove(name);
+            ErrorUtils.checkALError();
         }
     }
 
@@ -173,6 +183,7 @@ public class AudioPlayback {
         if (loopingSfx.containsKey(name)) {
             int source = loopingSfx.get(name);
             alSourcef(source, AL_PITCH, pitch);
+            ErrorUtils.checkALError();
         }
     }
 
@@ -185,24 +196,35 @@ public class AudioPlayback {
      * @param name
      */
     public static void playMusic(String name, boolean loop) {
-        if (!AudioLoader.vorbisMap.containsKey(name))
-            throw new IllegalArgumentException("Vorbis file was not specified at runtime: '"+name+"'.");
+        if (!AudioLoader.vorbisMap.containsKey(name)) {
+            throw new IllegalArgumentException("Vorbis file was not specified at runtime: '" + name + "'.");
+        }
+
+        while (updateLock) {
+            Thread.onSpinWait();
+        }
+        updateLock = true;
 
         if (name.equals(currentMusic)) {
             resumeMusic();
-        } else {
+        }
+        else {
             if (musicDecoder != null) {
                 musicDecoder.close();
             }
+
             musicDecoder = new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
             if (!musicDecoder.play()) {
                 System.err.println("Music playback failed.");
                 Window.destroy();
             }
+            currentMusic = name;
+
             // even if music is disabled, songs will be loaded and ready to play
+            isMusicPlaying = playMusic;
+            isMusicPaused = false;
             if (!playMusic) {
                 alSourcePause(musicDecoder.source);
-                isMusicPlaying = false;
             }
 
             // reset all music volume and fade parameters upon new music
@@ -210,11 +232,9 @@ public class AudioPlayback {
             fadeEndGain = 1;
             musicDecoder.setVolume(musicVolume);
         }
-        currentMusic = name;
-        isMusicPlaying = true;
-        isMusicPaused = false;
 
         ErrorUtils.checkALError();
+        updateLock = false;
     }
 
     /**
@@ -226,6 +246,7 @@ public class AudioPlayback {
             musicDecoder.rewind();
             isMusicPlaying = false;
             isMusicPaused = false;
+            ErrorUtils.checkALError();
         }
     }
 
@@ -239,6 +260,7 @@ public class AudioPlayback {
             alSourcePause(musicDecoder.source);
             isMusicPlaying = false;
             isMusicPaused = true;
+            ErrorUtils.checkALError();
         }
     }
 
@@ -251,6 +273,7 @@ public class AudioPlayback {
                 alSourcePlay(musicDecoder.source);
                 isMusicPlaying = true;
                 isMusicPaused = false;
+                ErrorUtils.checkALError();
             }
     }
 
@@ -271,6 +294,7 @@ public class AudioPlayback {
         if (isMusicPaused) {
             resumeMusic();
         }
+        ErrorUtils.checkALError();
     }
 
     ////////////////////
@@ -280,26 +304,68 @@ public class AudioPlayback {
      * Updates streaming music; called by the game loop.
      */
     public static void updateMusic() {
-        // TODO support fading music in/out
-        if (musicDecoder != null) {
+        if (updateLock) {
+            return;
+        }
+        updateLock = true;
 
-            musicFadeVolume = getMusicFade();
-            musicDecoder.setVolume(musicVolume * musicFadeVolume);
-
-
+        if (musicDecoder != null)
+        {
             if (!isMusicPlaying) {
+                updateLock = false;
                 return;
             }
 
-            if (musicFadeVolume == 0) {
+            musicFadeVolume = getMusicFade();
+            if (musicFadeVolume != lastFade) {
+                lastFade = musicFadeVolume;
+                musicDecoder.setVolume(musicVolume * musicFadeVolume);
+                ErrorUtils.checkALError();
+            }
+
+            if (musicFadeVolume == 0 && fadeEndGain == 0) {
                 pauseMusic();
+                updateLock = false;
                 return;
             }
 
             if (!musicDecoder.update()) {
                 stopMusic();
+                updateLock = false;
+                return;
             }
         }
+
+        updateLock = false;
+    }
+
+    private static void doUpdateLoop() {
+        boolean loop = true;
+        while (loop)
+        {
+            updateMusic();
+
+            try {
+                Thread.sleep(40);
+                loop = !Thread.currentThread().isInterrupted();
+            }
+            catch (InterruptedException e) {
+                loop = false;
+            }
+        }
+    }
+
+    private static Thread updateThread;
+    public static void startUpdateThread() {
+        if (updateThread != null && updateThread.isAlive())
+            return;
+        updateThread = new Thread(AudioPlayback::doUpdateLoop);
+        updateThread.start();
+    }
+
+    public static void stopUpdateThread() {
+        updateThread.interrupt();
+        updateThread = null;
     }
 
     private static float getMusicFade() {
