@@ -83,13 +83,24 @@ public class TextureMap {
             while((in = br.readLine()) != null) {
                 if (in.isEmpty() || in.startsWith("#")) // skip empty lines or comments
                     continue;
-                String[] keys = in.split("\t+");
+                String[] keys = in.split("[ \t]+");
                 try {
-                    if (keys.length == 2) {
-                        // load the texture
-                        for (int i = 0; i < keys.length; i++)
-                            keys[i] = keys[i].trim();
-                        load(keys[0], keys[1]);
+                    if (keys.length == 2)
+                    {
+                        if (keys[0].equals("!mipmaps")) {
+                            // set mipmap state
+                            ImageUtil.enableMipmap(keys[1].equals("on"));
+                        }
+                        else if (keys[0].equals("!filter")) {
+                            // set mipmap state
+                            ImageUtil.filterByDefault(keys[1].equals("on"));
+                        }
+                        else {
+                            // load the texture
+                            for (int i = 0; i < keys.length; i++)
+                                keys[i] = keys[i].trim();
+                            load(keys[0], keys[1]);
+                        }
                     } else
                         System.out.println("Invalid texture index line: " + in);
                 } catch (Exception e) {
