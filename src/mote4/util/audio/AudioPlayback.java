@@ -346,7 +346,7 @@ public class AudioPlayback {
             updateMusic();
 
             try {
-                Thread.sleep(40);
+                Thread.sleep(30);
                 loop = !Thread.currentThread().isInterrupted();
             }
             catch (InterruptedException e) {
