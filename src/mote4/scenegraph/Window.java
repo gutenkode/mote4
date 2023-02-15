@@ -318,7 +318,6 @@ public class Window {
             e.printStackTrace();
             System.exit(1);
         }
-        System.exit(0);
     }
 
     /**
