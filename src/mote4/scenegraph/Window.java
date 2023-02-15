@@ -5,6 +5,8 @@ import java.awt.Toolkit;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.function.Function;
+
 import mote4.scenegraph.target.Framebuffer;
 import mote4.util.ErrorUtils;
 import mote4.util.audio.ALContext;
@@ -57,6 +59,7 @@ public class Window {
     
     private static ArrayList<Layer> layers;
     private static Layer defaultLayer;
+    private static ArrayList<Runnable> onDestroyCallbacks;
 
     /**
      * Initialize the GLFW window and OpenGL context.
@@ -99,6 +102,7 @@ public class Window {
 
         defaultLayer = new Layer(Framebuffer.getDefault());
         layers = new ArrayList<>();
+        onDestroyCallbacks = new ArrayList<>();
 
         createContext(w,h,fullscreen,percent,percentHeight,aspectRatio);
 
@@ -227,6 +231,8 @@ public class Window {
         layers.add(l);
     }
 
+    public static void addOnDestroyCallback(Runnable callback) { onDestroyCallbacks.add(callback); }
+
     /**
      * Run the game loop with the current list of Layers and Scenes.
      * @param fps The framerate to run at. Vsync overrides any value.  A value <=0 means unlimited framerate.
@@ -305,6 +311,9 @@ public class Window {
             ShaderMap.clear();
             TextureMap.clear();
 
+            for (var callback : onDestroyCallbacks)
+                callback.run();
+
             // free the window callbacks and destroy the window
             glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
@@ -318,6 +327,8 @@ public class Window {
             e.printStackTrace();
             System.exit(1);
         }
+
+        System.exit(0);
     }
 
     /**
