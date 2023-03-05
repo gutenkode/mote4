@@ -23,14 +23,26 @@ public class AudioPlayback {
 
     private static List<Integer> sources;
     private static Map<String, Integer> loopingSfx;
+    private static List<SongEntry> queuedSongs;
+    private static SongEntry songToPlay;
     private static VorbisDecoder musicDecoder;
 
     private static double lastFade = -1;
-    private static volatile boolean updateLock = false;
+
+    private static class SongEntry {
+        public String name;
+        public boolean loop;
+
+        public SongEntry(String name, boolean loop) {
+            this.name = name;
+            this.loop = loop;
+        }
+    }
 
     static {
         sources = new ArrayList<>();
         loopingSfx = new HashMap<>();
+        queuedSongs = new ArrayList<>();
         currentMusic = "";
         playSfx = playMusic = true;
         isMusicPlaying = false;
@@ -200,41 +212,60 @@ public class AudioPlayback {
             throw new IllegalArgumentException("Vorbis file was not specified at runtime: '" + name + "'.");
         }
 
-        while (updateLock) {
-            Thread.onSpinWait();
-        }
-        updateLock = true;
-
         if (name.equals(currentMusic)) {
             resumeMusic();
         }
         else {
-            if (musicDecoder != null) {
-                musicDecoder.close();
-            }
+            isMusicPaused = false; // hacky but probably not a problem
+            songToPlay = new SongEntry(name, loop);
+        }
+    }
 
-            musicDecoder = new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
-            if (!musicDecoder.play()) {
-                System.err.println("Music playback failed.");
-                Window.destroy();
-            }
-            currentMusic = name;
+    private static void doPlayMusic() {
 
-            // even if music is disabled, songs will be loaded and ready to play
-            isMusicPlaying = playMusic;
-            isMusicPaused = false;
-            if (!playMusic) {
-                alSourcePause(musicDecoder.source);
-            }
+        String name;
+        boolean loop;
+        if (songToPlay == null) {
+            return;
+        }
+        name = songToPlay.name;
+        loop = songToPlay.loop;
+        songToPlay = null;
 
-            // reset all music volume and fade parameters upon new music
-            fadeStartGain = 1;
-            fadeEndGain = 1;
-            musicDecoder.setVolume(musicVolume);
+
+        if (musicDecoder != null) {
+            musicDecoder.close();
         }
 
+        musicDecoder = new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
+        if (!musicDecoder.play()) {
+            System.err.println("Music playback failed.");
+            Window.destroy();
+        }
+        currentMusic = name;
+
+        // even if music is disabled, songs will be loaded and ready to play
+        isMusicPlaying = playMusic;
+        isMusicPaused = false;
+        if (!playMusic) {
+            alSourcePause(musicDecoder.source);
+        }
+
+        // reset all music volume and fade parameters upon new music
+        fadeStartGain = 1;
+        fadeEndGain = 1;
+        musicDecoder.setVolume(musicVolume);
+
         ErrorUtils.checkALError();
-        updateLock = false;
+        //updateLock = false;
+    }
+
+    /**
+     * Add a buffer to the play queue.
+     * Queued tracks won't play if the current song is set to loop.
+     */
+    public static void queueMusic(String name, boolean loop) {
+        queuedSongs.add(new SongEntry(name,loop));
     }
 
     /**
@@ -244,6 +275,7 @@ public class AudioPlayback {
         if (musicDecoder != null) {
             alSourceStop(musicDecoder.source);
             musicDecoder.rewind();
+            musicDecoder = null;
             isMusicPlaying = false;
             isMusicPaused = false;
             ErrorUtils.checkALError();
@@ -277,7 +309,11 @@ public class AudioPlayback {
             }
     }
 
-    public static String getCurrentMusic() { return currentMusic; }
+    public static String getCurrentMusic() {
+        if (songToPlay != null)
+            return songToPlay.name;
+        return currentMusic;
+    }
 
     /**
      * Create a volume fade for currently playing music. Music is NOT paused, even if target gain is 0.
@@ -304,15 +340,13 @@ public class AudioPlayback {
      * Updates streaming music; called by the game loop.
      */
     public static void updateMusic() {
-        if (updateLock) {
-            return;
+        if (songToPlay != null) {
+            doPlayMusic();
         }
-        updateLock = true;
 
         if (musicDecoder != null)
         {
             if (!isMusicPlaying) {
-                updateLock = false;
                 return;
             }
 
@@ -325,18 +359,27 @@ public class AudioPlayback {
 
             if (musicFadeVolume == 0 && fadeEndGain == 0) {
                 pauseMusic();
-                updateLock = false;
                 return;
             }
 
             if (!musicDecoder.update()) {
-                stopMusic();
-                updateLock = false;
+                if (!queuedSongs.isEmpty())
+                {
+                    alSourceStop(musicDecoder.source);
+                    musicDecoder.rewind();
+                    isMusicPlaying = false;
+                    isMusicPaused = false;
+                    ErrorUtils.checkALError();
+
+                    songToPlay = queuedSongs.remove(0);
+                    doPlayMusic();
+                }
+                else {
+                    stopMusic();
+                }
                 return;
             }
         }
-
-        updateLock = false;
     }
 
     private static void doUpdateLoop() {
