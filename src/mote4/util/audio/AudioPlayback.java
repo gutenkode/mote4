@@ -212,11 +212,13 @@ public class AudioPlayback {
             throw new IllegalArgumentException("Vorbis file was not specified at runtime: '" + name + "'.");
         }
 
-        if (name.equals(currentMusic)) {
+        if (name.equals(currentMusic) && songToPlay == null) {
             resumeMusic();
         }
         else {
             isMusicPaused = false; // hacky but probably not a problem
+            currentMusic = name;
+
             songToPlay = new SongEntry(name, loop);
         }
     }
@@ -230,8 +232,6 @@ public class AudioPlayback {
         }
         name = songToPlay.name;
         loop = songToPlay.loop;
-        songToPlay = null;
-
 
         if (musicDecoder != null) {
             musicDecoder.close();
@@ -257,7 +257,8 @@ public class AudioPlayback {
         musicDecoder.setVolume(musicVolume);
 
         ErrorUtils.checkALError();
-        //updateLock = false;
+
+        songToPlay = null;
     }
 
     /**
@@ -272,9 +273,10 @@ public class AudioPlayback {
      * Stops playback and rewinds the decoder.
      */
     public static void stopMusic() {
-        if (musicDecoder != null) {
+        if (musicDecoder != null && songToPlay == null) {
             alSourceStop(musicDecoder.source);
             musicDecoder.rewind();
+            currentMusic = "";
             musicDecoder = null;
             isMusicPlaying = false;
             isMusicPaused = false;
@@ -288,7 +290,7 @@ public class AudioPlayback {
      * same song name will resume playing from this point.
      */
     public static void pauseMusic() {
-        if (musicDecoder != null) {
+        if (musicDecoder != null && songToPlay == null) {
             alSourcePause(musicDecoder.source);
             isMusicPlaying = false;
             isMusicPaused = true;
@@ -301,7 +303,7 @@ public class AudioPlayback {
      */
     public static void resumeMusic() {
         if (playMusic)
-            if (musicDecoder != null) {
+            if (musicDecoder != null && songToPlay == null) {
                 alSourcePlay(musicDecoder.source);
                 isMusicPlaying = true;
                 isMusicPaused = false;
