@@ -284,6 +284,10 @@ public class AudioPlayback {
         }
     }
 
+    public static void clearQueue() {
+        queuedSongs.clear();
+    }
+
     /**
      * Stops playback without rewinding.
      * Calling resumeMusic() or playMusic() with the
