@@ -180,14 +180,14 @@ public class OBJLoader {
         } catch (IOException e) {
             System.out.println("Failed to read file: " + br.toString());
             System.out.println(Arrays.toString(e.getStackTrace()));
-            //System.exit(0);
+            System.exit(0);
         } catch (NumberFormatException e) {
             System.out.println("Malformed OBJ (on line " + linecounter + "): " + br.toString() + "\r \r" + e.getMessage());
-            //System.exit(0);
+            System.exit(0);
         } catch (Exception e) {
             System.out.println("Error reading file: " + br.toString());
             System.out.println(Arrays.toString(e.getStackTrace()));
-            //System.exit(0);
+            System.exit(0);
         }
 
     }

@@ -322,12 +322,16 @@ public class AudioPlayback {
     }
 
     /**
-     * Create a volume fade for currently playing music. Music is NOT paused, even if target gain is 0.
+     * Create a volume fade for currently playing music.
+     * If music is paused or not playing and endGain is 0, nothing will be done.
      * @param startGain The music will immediately be set to this level, scaled by the music volume.  A value of 1 is "full", independent of normal volume setting.
      * @param endGain The music will fade smoothly to this level.
      * @param time How long in seconds the transition should take.
      */
     public static void setMusicFade(float startGain, float endGain, double time) {
+        if (endGain == 0 && (isMusicPaused || !isMusicPlaying || !playMusic)) {
+            return;
+        }
         fadeStartGain = startGain;
         fadeEndGain = endGain;
         fadeStartTime = Window.time();
