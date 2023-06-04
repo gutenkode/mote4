@@ -33,9 +33,14 @@ public class AudioPlayback {
         public String name;
         public boolean loop;
 
+        public VorbisDecoder decoder;
+
         public SongEntry(String name, boolean loop) {
             this.name = name;
             this.loop = loop;
+
+            decoder = new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
+            decoder.update();
         }
     }
 
@@ -237,7 +242,7 @@ public class AudioPlayback {
             musicDecoder.close();
         }
 
-        musicDecoder = new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
+        musicDecoder = songToPlay.decoder;//new VorbisDecoder(AudioLoader.vorbisMap.get(name), loop);
         if (!musicDecoder.play()) {
             System.err.println("Music playback failed.");
             Window.destroy();
@@ -275,7 +280,6 @@ public class AudioPlayback {
     public static void stopMusic() {
         if (musicDecoder != null && songToPlay == null) {
             alSourceStop(musicDecoder.source);
-            musicDecoder.rewind();
             currentMusic = "";
             musicDecoder = null;
             isMusicPlaying = false;
@@ -285,6 +289,9 @@ public class AudioPlayback {
     }
 
     public static void clearQueue() {
+        for (SongEntry entry : queuedSongs) {
+            entry.decoder.close();
+        }
         queuedSongs.clear();
     }
 
