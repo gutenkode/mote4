@@ -263,8 +263,11 @@ public class FontUtils {
                 maxWidth = Math.max(maxWidth, width);
                 width = 0;
             }
-            else
-                width += letterWidth * (float)metrics[(int)c]/charPixelWidth;
+            else {
+                int i = (int) c;
+                i %= 256;
+                width += letterWidth * (float) metrics[i] / charPixelWidth;
+            }
         }
         return Math.max(maxWidth, width);
     }

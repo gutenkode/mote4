@@ -6,7 +6,7 @@ import org.lwjgl.BufferUtils;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +46,7 @@ public class FileIO {
 
     public static void saveFileAs(List<String> contents, String filepath) throws IOException {
         Path path = Paths.get(filepath);
-        Files.write(path, contents, Charset.forName("UTF-8"));
+        Files.write(path, contents, StandardCharsets.UTF_8);
     }
 
     /**
@@ -66,7 +66,7 @@ public class FileIO {
      * @return
      */
     public static BufferedReader getBufferedReader(String filepath) throws IOException {
-        return new BufferedReader(new InputStreamReader(getInputStream(filepath)));
+        return new BufferedReader(new InputStreamReader(getInputStream(filepath), StandardCharsets.UTF_8));
     }
 
     /**
