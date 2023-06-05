@@ -104,6 +104,8 @@ public class AudioPlayback {
         playSfx(name,1f,1f);
     }
     public static void playSfx(String name, float gain, float pitch) {
+        if (!ALContext.isCreated())
+            return;
         if (!playSfx)
             return;
         if (!AudioLoader.bufferMap.containsKey(name))

@@ -5,11 +5,11 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.ALC11.ALC_DEFAULT_ALL_DEVICES_SPECIFIER;
 import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -21,21 +21,26 @@ public class ALContext {
 
     private static boolean created = false;
     private static long device, context;
-    private static String lastDefaultDevice;
+    private static String lastDefaultDevice, currentDevice;
 
     /**
-     * Creates the OpenAL context.  
+     * Creates the OpenAL context on the default device.
      * This must be called before loading or using any audio utilities.
      */
     public static void initContext() {
+        // Can call "alc" functions at any time
+        initContext(alcGetString(0, ALC_DEFAULT_ALL_DEVICES_SPECIFIER));
+    }
+
+    private static void initContext(String newDevice) {
         if (created)
             return;
 
-        // Can call "alc" functions at any time
-        lastDefaultDevice = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-        device = alcOpenDevice(lastDefaultDevice);
+        lastDefaultDevice = alcGetString(0, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+        currentDevice = newDevice;
+        device = alcOpenDevice(currentDevice);
         if (device == NULL)
-            throw new IllegalStateException("Failed to open the default device.");
+            throw new IllegalStateException("Failed to open audio device.");
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
         //ALUtils.printALCInfo(device, deviceCaps);
@@ -48,7 +53,7 @@ public class ALContext {
         AL.createCapabilities(deviceCaps);
 
         //ALUtils.printALInfo();
-        //ALUtils.printDevices();
+        //ALUtils.printDevices(EnumerateAllExt.ALC_ALL_DEVICES_SPECIFIER, "playback");
 
         alListenerfv(AL_ORIENTATION, new float[] { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
         alListener3f(AL_POSITION, 0, 0, 0);
@@ -63,6 +68,8 @@ public class ALContext {
     public static void destroyContext() {
         if (created) {
             AudioPlayback.stopAllLoopingSfx();
+            AudioPlayback.stopMusic();
+            AudioPlayback.clearQueue();
             AudioPlayback.clear();
 
             alcSetThreadContext(NULL);
@@ -74,7 +81,25 @@ public class ALContext {
         }
     }
 
-    public static String getCurrentDevice() {
+    public static String getLastDefaultDevice() {
         return lastDefaultDevice;
+    }
+
+    public static String getCurrentDevice() {
+        return currentDevice;
+    }
+
+    public static long getCurrentDeviceID() {
+        return device;
+    }
+
+    /**
+     * Destroys and recreates the current audio context on a new device.
+     * This WILL unload all sfx and music, which MUST be handled by the game.
+     * @param newDevice
+     */
+    public static void switchToDevice(String newDevice) {
+        destroyContext();
+        initContext(newDevice);
     }
 }

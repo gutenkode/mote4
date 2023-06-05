@@ -4,6 +4,7 @@ import mote4.scenegraph.Scene;
 import mote4.scenegraph.Window;
 import mote4.util.Config;
 import mote4.util.ErrorUtils;
+import mote4.util.audio.ALContext;
 import mote4.util.matrix.Transform;
 import mote4.util.shader.ShaderMap;
 import mote4.util.shader.ShaderUtils;
@@ -41,6 +42,8 @@ public class Mote4Example implements Scene {
         //Window.initFullscreen();
         Window.setVsync(true);
         Window.displayDeltaInTitle(true);
+
+        ALContext.initContext();
 
         //glfwSetWindowAspectRatio(Window.getWindowID(), 16, 9);
         glfwSetWindowSizeLimits(Window.getWindowID(), 640, 480, GLFW_DONT_CARE, GLFW_DONT_CARE);
