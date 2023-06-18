@@ -231,7 +231,6 @@ public class AudioPlayback {
     }
 
     private static void doPlayMusic() {
-
         String name;
         boolean loop;
         if (songToPlay == null) {
@@ -258,9 +257,9 @@ public class AudioPlayback {
             alSourcePause(musicDecoder.source);
         }
 
-        // reset all music volume and fade parameters upon new music
-        fadeStartGain = 1;
-        fadeEndGain = 1;
+        // don't reset fade upon playing new music
+        //fadeStartGain = 1;
+        //fadeEndGain = 1;
         musicDecoder.setVolume(musicVolume);
 
         ErrorUtils.checkALError();

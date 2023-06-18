@@ -1,6 +1,8 @@
 package mote4.util;
 
 import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.ALC10.alcGetCurrentContext;
+import static org.lwjgl.openal.ALC10.alcGetError;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS;
@@ -11,12 +13,14 @@ import static org.lwjgl.opengl.GL32.GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS;
  */
 public class ErrorUtils {
 
-    private static boolean debug = false;
+    private static boolean debug = true;
 
     public static void debug(boolean d) { debug = d; }
     public static boolean debug() { return debug; }
     
     public static void checkFBOCompleteness(int ID) {
+        if (!debug)
+            return;
         int error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         switch (error) {
             case GL_FRAMEBUFFER_COMPLETE:
@@ -73,7 +77,9 @@ public class ErrorUtils {
     }
 
     public static void checkALError() {
-        int error = alGetError();
+        if (!debug)
+            return;
+        int error = alcGetError(alcGetCurrentContext());
         switch (error) {
             case AL_NO_ERROR:
                 break;

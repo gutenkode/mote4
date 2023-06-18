@@ -66,18 +66,24 @@ public class ALContext {
     public static boolean isCreated() { return created; }
 
     public static void destroyContext() {
+        ErrorUtils.checkALError();
         if (created) {
+            created = false;
             AudioPlayback.stopAllLoopingSfx();
             AudioPlayback.stopMusic();
             AudioPlayback.clearQueue();
             AudioPlayback.clear();
 
+            ErrorUtils.checkALError();
+
+            alcMakeContextCurrent(NULL);
             alcSetThreadContext(NULL);
             alcDestroyContext(context);
             alcCloseDevice(device);
 
+            ErrorUtils.checkALError();
+
             System.out.println("OpenAL terminated.");
-            created = false;
         }
     }
 
@@ -99,7 +105,13 @@ public class ALContext {
      * @param newDevice
      */
     public static void switchToDevice(String newDevice) {
+        ErrorUtils.checkALError();
+
+        if (!created)
+            return;
         destroyContext();
         initContext(newDevice);
+
+        ErrorUtils.checkALError();
     }
 }
