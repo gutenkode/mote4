@@ -148,6 +148,7 @@ public class MultiColorFBO  extends Target {
 
         // make sure nothing screwy happened
         ErrorUtils.checkFBOCompleteness(bufferIndex);
+        ErrorUtils.checkGLError();
     }
 
     /**

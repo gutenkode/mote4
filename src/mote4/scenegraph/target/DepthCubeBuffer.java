@@ -1,5 +1,6 @@
 package mote4.scenegraph.target;
 
+import mote4.util.ErrorUtils;
 import mote4.util.texture.TextureMap;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -57,6 +58,10 @@ public class DepthCubeBuffer extends Target {
         
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // make sure nothing screwy happened
+        ErrorUtils.checkFBOCompleteness(bufferIndex);
+        ErrorUtils.checkGLError();
     }
     
     /**

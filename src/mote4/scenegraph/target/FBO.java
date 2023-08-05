@@ -113,9 +113,10 @@ public class FBO extends Target {
                                       GL_RENDERBUFFER, 
                                       stencilRenderBufferID);
         }
-        
+
         // make sure nothing screwy happened
         ErrorUtils.checkFBOCompleteness(bufferIndex);
+        ErrorUtils.checkGLError();
     }
     
     /**

@@ -72,8 +72,8 @@ public class MSAAMultiColorFBO extends Target {
 
             // bind the texture
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureID[i]);
-            glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            //glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // filter doesn't apply to multisampled textures
+            //glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
             // create the texture data
             int internalFormat = formats[i];
@@ -150,6 +150,7 @@ public class MSAAMultiColorFBO extends Target {
 
         // make sure nothing screwy happened
         ErrorUtils.checkFBOCompleteness(bufferIndex);
+        ErrorUtils.checkGLError();
     }
 
     /**
@@ -160,8 +161,10 @@ public class MSAAMultiColorFBO extends Target {
      */
     public MSAAMultiColorFBO addToTextureMap(String name, int index, boolean filter) {
         TextureMap.add(colorTextureID[index], GL_TEXTURE_2D_MULTISAMPLE, name);
-        TextureMap.get(name).filter(filter);
+        //TextureMap.get(name).filter(filter); // filter doesn't apply to multisampled textures
         textureName[index] = name;
+
+        ErrorUtils.checkGLError();
         return this;
     }
 
@@ -173,6 +176,8 @@ public class MSAAMultiColorFBO extends Target {
         glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
         GL20.glDrawBuffers(drawBuffers);
         GL11.glViewport(0, 0, width, height);
+
+        ErrorUtils.checkGLError();
     }
 
     /**
@@ -204,5 +209,7 @@ public class MSAAMultiColorFBO extends Target {
         }
 
         glDeleteFramebuffers(bufferIndex);
+
+        ErrorUtils.checkGLError();
     }
 }

@@ -1,6 +1,7 @@
 package mote4.util.shader;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import mote4.util.ErrorUtils;
 import mote4.util.texture.TextureMap;
@@ -21,6 +22,7 @@ public class Uniform {
         int loc = glGetUniformLocation(ShaderMap.getCurrent(), uniformName);
         if (ErrorUtils.debug() && loc == -1) {
             System.err.println("The uniform '"+uniformName+"' does not exist in the program '"+ShaderMap.getCurrentName()+"'.");
+            //System.err.println(Arrays.toString((new Throwable()).getStackTrace()));
         }
         return loc;
     }
@@ -129,6 +131,15 @@ public class Uniform {
             TextureMap.bindFiltered(texName);
         else
             TextureMap.bindUnfiltered(texName);
+        sampler(uniformName, textureIndex);
+        glActiveTexture(currentTexture);
+        ErrorUtils.checkGLError();
+    }
+
+    public static void samplerNoFilter(String uniformName, int textureIndex, String texName) {
+        int currentTexture = glGetInteger(GL_ACTIVE_TEXTURE);
+        glActiveTexture(GL_TEXTURE0 + textureIndex);
+        TextureMap.bind(texName);
         sampler(uniformName, textureIndex);
         glActiveTexture(currentTexture);
         ErrorUtils.checkGLError();

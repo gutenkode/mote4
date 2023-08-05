@@ -1,5 +1,7 @@
 package mote4.util;
 
+import mote4.scenegraph.Window;
+
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.ALC10.alcGetCurrentContext;
 import static org.lwjgl.openal.ALC10.alcGetError;
@@ -56,6 +58,8 @@ public class ErrorUtils {
 
     public static void checkGLError() {
         if (!debug)
+            return;
+        if (Window.getWindowID() == -1)
             return;
         int error = glGetError();
         switch (error) {
