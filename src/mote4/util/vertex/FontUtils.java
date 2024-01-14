@@ -251,13 +251,13 @@ public class FontUtils {
         for (int j = 0; j < text.length(); j++) {
             char c = text.charAt(j);
             
-            if (c == '@' && text.charAt(j+1) == '{') 
+            /*if (c == '@' && text.charAt(j+1) == '{')
             {
                 // this is a color value
                 int end = text.indexOf('}', j+2);
                 j = end;
             }
-            else if (c == '\n')
+            else*/ if (c == '\n')
             {
                 // handle newlines, only return the greatest single line length
                 maxWidth = Math.max(maxWidth, width);
@@ -305,29 +305,45 @@ public class FontUtils {
         StringBuilder sb = new StringBuilder();
         float spaceLength = getStringWidth(" ");
 
-        String[] lines = source.split("\n");
+        String[] lines = source.split("\n", -1);
+        int lineIndex = 0;
         for (String line : lines)
         {
+            boolean lastLine = lineIndex == lines.length-1;
+            lineIndex++;
+
             float lineLength = 0;
-            String[] words = line.trim().split(" ");
+            String[] words = line.split(" ", -1);
+            int wordIndex = 0;
             for (String word : words)
             {
-                word = word.trim();
+                boolean lastWord = wordIndex == words.length-1;
+                wordIndex++;
+
+                //word = word.trim();
                 float wordLength = getStringWidth(word);
 
                 if (lineLength+spaceLength+wordLength > lineLengthLimit) {
                     sb.append("\n");
                     sb.append(word);
-                    sb.append(" ");
+                    if (!lastWord)
+                        sb.append(" ");
                     lineLength = wordLength+spaceLength;
                 } else {
                     sb.append(word);
-                    sb.append(" ");
+                    if (!lastWord)
+                        sb.append(" ");
                     lineLength += wordLength+spaceLength;
                 }
             }
-            sb.append("\n");
+            if (!lastLine)
+                sb.append("\n");
         }
-        return sb.toString().trim();
+        /*int i = source.length()-1;
+        while (i >= 0 && source.charAt(i) == '\n') {
+            sb.append("\n"); // re-append trailing newines
+            i--;
+        }*/
+        return sb.toString();//.trim();
     }
 }
