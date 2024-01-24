@@ -281,12 +281,12 @@ public class AudioPlayback {
     public static void stopMusic() {
         if (musicDecoder != null && songToPlay == null) {
             alSourceStop(musicDecoder.source);
-            currentMusic = "";
-            musicDecoder = null;
-            isMusicPlaying = false;
-            isMusicPaused = false;
             ErrorUtils.checkALError();
         }
+        currentMusic = "";
+        musicDecoder = null;
+        isMusicPlaying = false;
+        isMusicPaused = false;
     }
 
     public static void clearQueue() {
@@ -304,10 +304,10 @@ public class AudioPlayback {
     public static void pauseMusic() {
         if (musicDecoder != null && songToPlay == null) {
             alSourcePause(musicDecoder.source);
-            isMusicPlaying = false;
-            isMusicPaused = true;
             ErrorUtils.checkALError();
         }
+        isMusicPlaying = false;
+        isMusicPaused = true;
     }
 
     /**
@@ -317,9 +317,9 @@ public class AudioPlayback {
         if (playMusic)
             if (musicDecoder != null && songToPlay == null) {
                 alSourcePlay(musicDecoder.source);
+                ErrorUtils.checkALError();
                 isMusicPlaying = true;
                 isMusicPaused = false;
-                ErrorUtils.checkALError();
             }
     }
 
@@ -338,6 +338,7 @@ public class AudioPlayback {
      */
     public static void setMusicFade(float startGain, float endGain, double time) {
         if (endGain == 0 && (isMusicPaused || !isMusicPlaying || !playMusic)) {
+            stopMusic(); // ensure music is stopped, since we're fading out anyways
             return;
         }
         fadeStartGain = startGain;
@@ -376,7 +377,7 @@ public class AudioPlayback {
             }
 
             if (musicFadeVolume == 0 && fadeEndGain == 0) {
-                pauseMusic();
+                stopMusic();
                 return;
             }
 
