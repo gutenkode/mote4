@@ -16,7 +16,7 @@ import static org.lwjgl.openal.AL10.alGetSourcei;
  */
 public class AudioPlayback {
 
-    private static boolean playSfx, playMusic, isMusicPlaying, isMusicPaused;
+    private static boolean playSfx, playMusic, isMusicPlaying, isMusicPaused, stopOnFadeOut = false;
     private static String currentMusic;
     private static float sfxVolume, musicVolume, musicFadeVolume, fadeStartGain, fadeEndGain;
     private static double fadeStartTime, fadeTransitionTime;
@@ -336,9 +336,13 @@ public class AudioPlayback {
      * @param endGain The music will fade smoothly to this level.
      * @param time How long in seconds the transition should take.
      */
-    public static void setMusicFade(float startGain, float endGain, double time) {
+    public static void setMusicFade(float startGain, float endGain, double time, boolean stopOnFadeOut) {
+        AudioPlayback.stopOnFadeOut = stopOnFadeOut;
         if (endGain == 0 && (isMusicPaused || !isMusicPlaying || !playMusic)) {
-            stopMusic(); // ensure music is stopped, since we're fading out anyways
+            if (stopOnFadeOut)
+                stopMusic();
+            else
+                pauseMusic();
             return;
         }
         fadeStartGain = startGain;
@@ -377,7 +381,10 @@ public class AudioPlayback {
             }
 
             if (musicFadeVolume == 0 && fadeEndGain == 0) {
-                stopMusic();
+                if (stopOnFadeOut)
+                    stopMusic();
+                else
+                    pauseMusic();
                 return;
             }
 
