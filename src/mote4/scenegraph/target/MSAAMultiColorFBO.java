@@ -6,6 +6,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -26,6 +28,7 @@ public class MSAAMultiColorFBO extends Target {
     private int   depthRenderBufferID,
                   stencilRenderBufferID;
     private String[] textureName;
+    private int[] formats;
 
     /**
      * Creates a framebuffer object.
@@ -44,6 +47,7 @@ public class MSAAMultiColorFBO extends Target {
     public MSAAMultiColorFBO(int w, int h, int numSamples, int numAttachments, boolean useDepthBuffer, boolean useStencilBuffer, int[] buffers, int... formats) {
         width = w;
         height = h;
+        this.formats = formats;
         textureName = new String[numAttachments];
         if (formats.length != numAttachments)
             throw new IllegalArgumentException();
@@ -195,6 +199,40 @@ public class MSAAMultiColorFBO extends Target {
     void endCurrent() {
         GL20.glDrawBuffers(GL_COLOR_ATTACHMENT0);
     }
+
+    /*public BufferedImage getAsImage(int bufferIndex) {
+        ErrorUtils.checkGLError();
+        int channels = 4;
+        if (formats[bufferIndex] == GL_RGB8 || formats[bufferIndex] == GL_RGB16)
+            channels = 3;
+
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * channels);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        ErrorUtils.checkGLError();
+        TextureMap.get(textureName[bufferIndex]).bindFiltered();
+        glGetTexImage(GL_TEXTURE_2D_MULTISAMPLE, 0, formats[bufferIndex], GL_UNSIGNED_BYTE, buffer);
+
+        ErrorUtils.checkGLError();
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                int i = (x + y * width) * channels;
+
+                int r = buffer.get(i) & 0xFF;
+                int g = buffer.get(i + 1) & 0xFF;
+                int b = buffer.get(i + 2) & 0xFF;
+                int a = 255;
+                if (channels == 4)
+                    a = buffer.get(i + 3) & 0xFF;
+
+                image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
+            }
+        }
+
+        ErrorUtils.checkGLError();
+
+        return image;
+    }*/
 
     @Override
     public void destroy() {

@@ -7,6 +7,10 @@ import static org.lwjgl.opengl.GL30.*;
 import mote4.util.ErrorUtils;
 import mote4.util.texture.Texture;
 import mote4.util.texture.TextureMap;
+import org.lwjgl.BufferUtils;
+
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 
 /**
  * A framebuffer object can be rendered to like the framebuffer, 
@@ -156,6 +160,38 @@ public class FBO extends Target {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
     public Texture getTexture() { return TextureMap.get(textureName); }
+
+    public BufferedImage getAsImage() {
+        var format = GL_RGBA;
+        int channels = 4;
+        /*if (format == GL_RGB)
+            channels = 3;*/
+
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * channels);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        getTexture().bindFiltered();
+        glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, buffer);
+
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                int i = (x + y * width) * channels;
+
+                int r = buffer.get(i) & 0xFF;
+                int g = buffer.get(i + 1) & 0xFF;
+                int b = buffer.get(i + 2) & 0xFF;
+                int a = 255;
+                if (channels == 4)
+                    a = buffer.get(i + 3) & 0xFF;
+
+                image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
+            }
+        }
+
+        ErrorUtils.checkGLError();
+
+        return image;
+    }
     
     @Override
     public void destroy() {
