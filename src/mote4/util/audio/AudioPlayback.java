@@ -16,7 +16,7 @@ import static org.lwjgl.openal.AL10.alGetSourcei;
  */
 public class AudioPlayback {
 
-    private static boolean playSfx, playMusic, isMusicPlaying, isMusicPaused, stopOnFadeOut = false;
+    private static boolean playSfx, playMusic, isMusicPlaying, isMusicPaused, stopOnFadeOut = false, isFadeDone = true;
     private static String currentMusic;
     private static float sfxVolume, musicVolume, musicFadeVolume, fadeStartGain, fadeEndGain;
     private static double fadeStartTime, fadeTransitionTime;
@@ -231,13 +231,9 @@ public class AudioPlayback {
     }
 
     private static void doPlayMusic() {
-        String name;
-        boolean loop;
         if (songToPlay == null) {
             return;
         }
-        name = songToPlay.name;
-        loop = songToPlay.loop;
 
         if (musicDecoder != null) {
             musicDecoder.close();
@@ -248,7 +244,8 @@ public class AudioPlayback {
             System.err.println("Music playback failed.");
             Window.destroy();
         }
-        currentMusic = name;
+
+        currentMusic = songToPlay.name;
 
         // even if music is disabled, songs will be loaded and ready to play
         isMusicPlaying = playMusic;
@@ -350,6 +347,7 @@ public class AudioPlayback {
         fadeStartTime = Window.time();
         fadeTransitionTime = time;
         musicFadeVolume = startGain;
+        isFadeDone = false;
         if (isMusicPaused) {
             resumeMusic();
         }
@@ -378,14 +376,14 @@ public class AudioPlayback {
                 lastFade = musicFadeVolume;
                 musicDecoder.setVolume(musicVolume * musicFadeVolume);
                 ErrorUtils.checkALError();
-            }
 
-            if (musicFadeVolume == 0 && fadeEndGain == 0) {
-                if (stopOnFadeOut)
-                    stopMusic();
-                else
-                    pauseMusic();
-                return;
+                if (musicFadeVolume == 0 && fadeEndGain == 0 && isFadeDone) {
+                    if (stopOnFadeOut)
+                        stopMusic();
+                    else
+                        pauseMusic();
+                    return;
+                }
             }
 
             if (!musicDecoder.update()) {
@@ -440,6 +438,7 @@ public class AudioPlayback {
     private static float getMusicFade() {
         double step = (Window.time()-fadeStartTime)/fadeTransitionTime;
         step = Math.max(0, Math.min(1, step));
+        isFadeDone = step == 1;
         return fadeStartGain *(float)(1-step) + fadeEndGain *(float)step;
     }
 
